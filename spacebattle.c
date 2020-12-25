@@ -8,12 +8,22 @@
 
 #define MAX_USR (10)
 
+
+static void User_turn_left(struct User * me);
+static void User_turn_right(struct User * me);
+static void User_accelerate(struct User * me);
+static void User_decelerate(struct User * me);
+static void User_fire(struct User * me);
+static void User_move(struct User * me);
+
+
 enum Event {
 	EVT_W,
 	EVT_A,
 	EVT_S,
 	EVT_D,
 	EVT_SPACE,
+	EVT_TICK,
 };
 
 enum spaceshipstate {flying, broken};
@@ -65,10 +75,32 @@ void User_print(struct User * me)
 
 // typedef void(*dispatch_f)(int event, void * data);
 
-void on_dispatch(void * receiver, int ev, void * data)
+static void on_dispatch(void * receiver, int ev, void * data)
 {
 	struct User * me = receiver;
 	printf("on_dispatch e=%lu u=%d sub=%d\n", ev , me->usr, me->sub);
+
+	switch(ev) {
+	case EVT_W:
+		User_accelerate(me);
+		break;
+	case EVT_A:
+		User_turn_left(me);
+		break;
+	case EVT_S:
+		User_decelerate(me);
+		break;
+	case EVT_D:
+		User_turn_right(me);
+		break;
+	case EVT_SPACE:
+		User_fire(me);
+		break;
+	case EVT_TICK:
+		User_move(me);
+		break;
+
+	}
 }
 
 void User_init(struct User * me, jpfusr_t usr)
@@ -168,21 +200,6 @@ static void User_move(struct User * me)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void User_tick(struct User * me, jpfhandle_t h)//remove?
 {
     if(me->laser.tmo)me->laser.tmo--;
@@ -201,47 +218,29 @@ void User_tick(struct User * me, jpfhandle_t h)//remove?
     int p = 0; 
     struct {char k[NROF_KEYEVT + 1];} keys = {{'.', '.', '.', '.', '.', '\0'}};
 
-    if(is_key(me->usr, KEY_W)) {
+	if(is_key(me->usr, KEY_W)) {
       p += 1;
-      User_accelerate(me);
       keys.k[KEY_W] = 'x';
     }
     if(is_key(me->usr, KEY_A)) {
       p += 1;
-      User_turn_left(me);
       keys.k[KEY_A] = 'x';
     }
     if(is_key(me->usr, KEY_S)) {
       p += 1;
-      User_decelerate(me);
       keys.k[KEY_S] = 'x';
     }
     if(is_key(me->usr, KEY_D)) {
       p += 1;
-      User_turn_right(me);
       keys.k[KEY_D] = 'x';
     }
     if(is_key(me->usr, KEY_SPACE)) {
-//      p += 1;
-      User_fire(me);
+      p += 1;
       keys.k[KEY_SPACE] = 'x';
     }
 	if (p)
-		User_move(me);
-
-	// void jeq_sendto(int evid, void * data, int dest);
-	if (p)
 		printf("%s", keys.k);
 
-#if 0
-  //  KEY_W, KEY_A, KEY_S, KEY_D, KEY_SPACE, NROF_KEYEVT
-	for (int k = 0; k < NROF_KEYEVT; k++) {
-		if (keys.k[k] == 'x') {
-			// void jeq_sendto(int evid, void * data, int dest);
-			
-		}
-	}
-#endif
 
 
 	if (is_key(me->usr, KEY_W)) {
@@ -259,11 +258,11 @@ void User_tick(struct User * me, jpfhandle_t h)//remove?
 	if (is_key(me->usr, KEY_SPACE)) {
 		jeq_sendto(EVT_SPACE, 0, me->sub);
 	}
-
-
+#if 0
+	jeq_sendto(EVT_TICK, 0, me->sub);
 
 	while (!jeq_dispatch());
-
+#endif
 }
 
 int User_draw(struct User * me, jpfhandle_t h)
@@ -336,6 +335,10 @@ void jpf_on_tick(jpfhandle_t h)
 			User_tick(&g_app.users[i], h);
 		}
 	}
+
+	jeq_broadcast(EVT_TICK, 0);
+	while (!jeq_dispatch());
+
         // See if laser hits
         for(int i = 0; i <  MAX_USR; i++) {
                 float x0, y0; // dummy
@@ -371,13 +374,5 @@ void jpf_on_draw(jpfhandle_t h)
 		}
 	}
 }
-
-
-
-
-
-
-
-
 
 
