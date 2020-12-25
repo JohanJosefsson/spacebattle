@@ -4,10 +4,22 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "jeq.h"
+
 #define MAX_USR (10)
+
+enum Event {
+	EVT_W,
+	EVT_A,
+	EVT_S,
+	EVT_D,
+	EVT_SPACE,
+};
+
 enum spaceshipstate {flying, broken};
 enum laserstate {active, inactive};
 struct User {
+	int sub;
 	jpfusr_t usr;
         float x;
         float y;
@@ -51,9 +63,17 @@ void User_print(struct User * me)
 }
 
 
+// typedef void(*dispatch_f)(int event, void * data);
+
+void on_dispatch(void * receiver, int ev, void * data)
+{
+	struct User * me = receiver;
+	printf("on_dispatch e=%lu u=%d sub=%d\n", ev , me->usr, me->sub);
+}
+
 void User_init(struct User * me, jpfusr_t usr)
 {
-        	me->usr = usr;
+        me->usr = usr;
 		me->x = usr%MAX_X;
         	me->y = usr%MAX_Y;
                 me->vel_x = 0.0;
@@ -69,6 +89,8 @@ void User_init(struct User * me, jpfusr_t usr)
 	me->spid_spaceship = jpf_create_sprite("spaceship.png");
 	me->spid_broken = jpf_create_sprite("broken.png");
 	me->laser.spid = jpf_create_sprite("laser.png");
+	me->sub =  jeq_subscribe(on_dispatch, me);
+
 }
 
 void User_deinit(struct User * me)
@@ -204,10 +226,43 @@ void User_tick(struct User * me, jpfhandle_t h)//remove?
       User_fire(me);
       keys.k[KEY_SPACE] = 'x';
     }
-  if(p)
-  User_move(me);
+	if (p)
+		User_move(me);
+
+	// void jeq_sendto(int evid, void * data, int dest);
+	if (p)
+		printf("%s", keys.k);
+
+#if 0
+  //  KEY_W, KEY_A, KEY_S, KEY_D, KEY_SPACE, NROF_KEYEVT
+	for (int k = 0; k < NROF_KEYEVT; k++) {
+		if (keys.k[k] == 'x') {
+			// void jeq_sendto(int evid, void * data, int dest);
+			
+		}
+	}
+#endif
 
 
+	if (is_key(me->usr, KEY_W)) {
+		jeq_sendto(EVT_W, 0, me->sub);
+	}
+	if (is_key(me->usr, KEY_A)) {
+		jeq_sendto(EVT_A, 0, me->sub);
+	}
+	if (is_key(me->usr, KEY_S)) {
+		jeq_sendto(EVT_S, 0, me->sub);
+	}
+	if (is_key(me->usr, KEY_D)) {
+		jeq_sendto(EVT_D, 0, me->sub);
+	}
+	if (is_key(me->usr, KEY_SPACE)) {
+		jeq_sendto(EVT_SPACE, 0, me->sub);
+	}
+
+
+
+	while (!jeq_dispatch());
 
 }
 
