@@ -1,3 +1,5 @@
+#ifndef JPF_H_
+#define JPF_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,3 +42,4 @@ extern "C" {
 #endif
 
 
+#endif
