@@ -24,6 +24,8 @@ void Game::Run()
 			update(TimePerFrame);
 		}
 		render();
+		sf::Time delayTime = sf::milliseconds(1.0);
+		sf::sleep(delayTime);
 	}
 }
 
