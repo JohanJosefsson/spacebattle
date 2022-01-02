@@ -1,12 +1,12 @@
 #include "jeq.h"
-
+#include <malloc.h>
 #include <assert.h>
 
 #define BC (-1) /* broadcast */
 
 #define QS (100) /* Queue size */
 #define NSUBS (100)
-struct {
+struct GEvQ {
 	int head;
 	int tail;
 	struct{
@@ -91,7 +91,7 @@ int jeq_dispatch(void)
 
 	if (g_evq.head != g_evq.tail) {
 		/* dispatch from the head */
-		int h = g_evq.head;
+		const int h = g_evq.head;
 		if (BC == g_evq.q[h].dest) {
 			for (int i = 0; i < g_sublist.nextindex; i++) {
 				g_sublist.dispatch[i](g_sublist.receiver[i], g_evq.q[h].evid, g_evq.q[h].data);
@@ -100,6 +100,7 @@ int jeq_dispatch(void)
 		else {
 			g_sublist.dispatch[g_evq.q[h].dest](g_sublist.receiver[g_evq.q[h].dest], g_evq.q[h].evid, g_evq.q[h].data);
 		}
+		if(g_evq.q[h].data)free(g_evq.q[h].data);
 
 		g_evq.head = (g_evq.head + 1) % QS;
 		return 0;
