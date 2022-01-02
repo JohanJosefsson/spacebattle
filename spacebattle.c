@@ -9,7 +9,7 @@
 
 #define MAX_USR (10)
 
-
+/*
 enum Event {
 	EVT_W,
 	EVT_A,
@@ -18,7 +18,7 @@ enum Event {
 	EVT_SPACE,
 	EVT_TICK,
 };
-
+*/
 
 struct User {
 	jpfusr_t usr;
@@ -30,6 +30,98 @@ struct User {
 static struct {
   struct User users[MAX_USR];
 }g_app;
+
+////////////////////////////////////////////////////////////
+
+#define NW (3)
+struct GWorld{
+	int x;
+	struct TreadData * pd[NW];
+}g_world;
+
+static void tread(struct TreadData * p)
+{
+	int i0 = -1; // The users current index
+	for (int i = 0; i < NW; i++) {
+		if (g_world.pd[i] && p->id == g_world.pd[i]->id) {
+			i0 = i;
+		}
+	}
+
+
+	int in = -1; // Index New
+
+	// Loop through all indices
+	for (int i = 0; i < NW; i++) {
+		if (g_world.pd[i] && p->id == g_world.pd[i]->id) continue;
+		// Skip if the index has no user (data)
+		if (!g_world.pd[i]) {
+			if (-1 == in) {
+				in = i; // remember index for use if user is new
+			}
+			continue;
+		}
+
+		// Check for collision
+		int adx = abs(p->x - g_world.pd[i]->x);
+		int ady = abs(p->y - g_world.pd[i]->y);
+		//printf(" { %d %d } ", adx, ady);
+		if (adx <= 16 && ady <= 16) {
+			//printf("COLLISION!\n");
+			struct TreadRefuse * tr = malloc(sizeof(struct TreadRefuse));
+			tr->col_sig = g_world.pd[i]->col_sig;
+			tr->x = g_world.pd[i0]->x;
+			tr->y = g_world.pd[i0]->y;
+			jeq_sendto(EVT_TREAD_DENIED, tr, g_world.pd[i0]->id);////
+
+			 
+		}
+	}
+
+	if (-1 == i0) {
+		g_world.pd[in] = p;
+		printf("adding  %d at index %d\n", p->id, in);
+	} else {
+		free(g_world.pd[i0]);
+		g_world.pd[i0] = p;
+	}
+
+
+
+
+	//printf("%d %d %d\n", p->id, p->x, p->y);
+}
+
+//typedef void(*dispatch_f)(void * receiver, int event, void * data);
+//static void on_dispatch(void * receiver, int ev, void * data)
+static void on_dispatch(void * receiver, int ev, void * data)
+{
+	switch (ev) {
+	case EVT_TREAD:
+		tread((struct TreadData *)data);
+		break;
+	}
+}
+static void World_init()
+{
+	jeq_subscribe_res(WORLD, on_dispatch, &g_world);
+}
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////
+
+
+
+void jpf_init()
+{
+	jeq_init(NOF_SUBS);
+	World_init();
+}
 
 void jpf_on_new_user(jpfusr_t usr)
 {

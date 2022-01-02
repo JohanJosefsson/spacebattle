@@ -11,6 +11,7 @@ Game::Game()
 
 void Game::Run()
 {
+	jpf_init();
 	sf::Clock clock;
 	sf::Time timeSinceLastUpdate = sf::Time::Zero;
 

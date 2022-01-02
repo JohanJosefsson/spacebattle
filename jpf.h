@@ -26,6 +26,7 @@ extern "C" {
 
 
 // To be implemented by the application
+	void jpf_init();
 	void jpf_on_new_user(jpfusr_t usr);
 	void jpf_on_remove_user(jpfusr_t usr);
 	void jpf_on_tick(jpfhandle_t h);

@@ -16,6 +16,15 @@ static void Spaceship_fire(struct Spaceship * me);
 static void Spaceship_move(struct Spaceship * me);
 
 
+/* Utility */
+static int sgn(int x)
+{
+	if (x < 0)return -1;
+	if (x > 0)return 1;
+	return 0;
+}
+
+/*
 enum Event {
 	EVT_W,
 	EVT_A,
@@ -24,7 +33,7 @@ enum Event {
 	EVT_SPACE,
 	EVT_TICK,
 };
-
+*/
 enum spaceshipstate {flying, broken};
 enum laserstate {active, inactive};
 struct Spaceship {
@@ -32,6 +41,10 @@ struct Spaceship {
 	jpfusr_t usr;
         float x;
         float y;
+		struct {
+			float x;
+			float y;
+		}old;
 	float vel_x;
 	float vel_y;
 	float angle;
@@ -77,7 +90,7 @@ void Spaceship_print(struct Spaceship * me)
 static void on_dispatch(void * receiver, int ev, void * data)
 {
 	struct Spaceship * me = receiver;
-	printf("on_dispatch e=%lu u=%d sub=%d\n", ev , me->usr, me->sub);
+	//printf("on_dispatch e=%lu u=%d sub=%d\n", ev , me->usr, me->sub);
 
 	switch(ev) {
 	case EVT_W:
@@ -98,7 +111,15 @@ static void on_dispatch(void * receiver, int ev, void * data)
 	case EVT_TICK:
 		Spaceship_move(me);
 		break;
-
+	case EVT_TREAD_DENIED:
+		printf("tread denied\n");
+		struct TreadRefuse * tr = data;
+		me->x = tr->x;
+		me->y = tr->y;
+		me->vel_x = -1*sgn(me->vel_x)*0.5;
+		me->vel_y = -1*sgn(me->vel_y)*0.5;
+		break;
+		// TODO free memory?
 	}
 }
 
@@ -195,6 +216,21 @@ static void Spaceship_move(struct Spaceship * me)
     break;
     }
     Spaceship_print(me);
+	//if ((abs(me->x - me->old.x) > 0.0001) || (abs(me->y - me->old.y) > 0.0001)) {
+	if (abs(me->x) - abs(me->old.x) || abs(me->y) != abs(me->old.y)) {
+
+		struct TreadData * p = malloc(sizeof(struct TreadData));
+		p->col_sig = COLSIG_PLAYER;
+		p->id = me->sub;
+		p->x = me->x;
+		p->y = me->y;
+		jeq_sendto(EVT_TREAD, p, WORLD);
+		me->old.x = me->x;
+		me->old.y = me->y;
+		//printf("%f %f %f %f\n", me->x, me->old.x, me->y, me->old.y);
+
+
+	}
 }
 
 

@@ -45,9 +45,24 @@ void jeq_send_now(int evid, void * data, int dest)
 
 struct {
 	int nextindex;
+	int n_res; // Number of reserved
 	dispatch_f dispatch[NSUBS];
 	void * receiver[NSUBS];
 }g_sublist;
+
+
+
+void jeq_init(int n)
+{
+	assert(0 == g_sublist.nextindex);
+	assert(0 == g_sublist.n_res);
+	g_sublist.nextindex = n;
+	g_sublist.n_res = n;
+}
+
+
+
+
 
 int jeq_subscribe(dispatch_f on_dispatch, void * data)
 {
@@ -56,6 +71,13 @@ int jeq_subscribe(dispatch_f on_dispatch, void * data)
 	g_sublist.dispatch[g_sublist.nextindex++] = on_dispatch;
 	assert(g_sublist.nextindex < NSUBS);
 	return ret;
+}
+
+void jeq_subscribe_res(int n, dispatch_f on_dispatch, void * data)
+{
+	assert(n < g_sublist.n_res);
+	g_sublist.receiver[n] = data;
+	g_sublist.dispatch[n] = on_dispatch;
 }
 
 void jeq_unsub(int subid)
