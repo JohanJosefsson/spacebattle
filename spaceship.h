@@ -12,6 +12,7 @@ enum Event {
 
 	EVT_TREAD,
 	EVT_TREAD_DENIED,
+	EVT_COLLISION,
 };
 
 enum CollisionSignature {
@@ -35,6 +36,7 @@ struct CollisionData {
 	//int x;
 	//int y;
 	enum CollisionSignature col_sig;
+	int id;
 };
 
 

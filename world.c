@@ -24,9 +24,10 @@ static int is_solid(int s1, int s2) {
 	int r2 = 0;
 	while (g_world.solid_col_sigs[i] != -1) {
 		int s = g_world.solid_col_sigs[i];
-		r1 = r1 || (s1 = s);
-		r2 = r2 || (s2 = s);
-		if (r1 && r2)return 1;
+		r1 = r1 || (s1 == s);
+		r2 = r2 || (s2 == s);
+		if (r1 && r2)
+			return 1;
 		i++;
 	}
 	return 0;
@@ -62,15 +63,24 @@ static void tread(struct TreadData * p)
 		//printf(" { %d %d } ", adx, ady);
 		if (adx <= 16 && ady <= 16) {
 			//printf("COLLISION!\n");
-			if (is_solid(g_world.pd[i]->col_sig, g_world.pd[i0]->col_sig)) {
+			if (is_solid(g_world.pd[i]->col_sig, p->col_sig)) {
 				solid_collision = 1;
 
-
+				assert(-1 != i0);
 				struct TreadRefuse * tr = malloc(sizeof(struct TreadRefuse));
 				tr->col_sig = g_world.pd[i]->col_sig;
 				tr->x = g_world.pd[i0]->x;
 				tr->y = g_world.pd[i0]->y;
 				jeq_sendto(EVT_TREAD_DENIED, tr, g_world.pd[i0]->id);////
+			} else {
+				struct CollisionData * cd1 = malloc(sizeof(struct CollisionData));
+				cd1->col_sig = g_world.pd[i]->col_sig;
+				cd1->id = g_world.pd[i]->id;
+				jeq_sendto(EVT_COLLISION, cd1, p->id);
+				struct CollisionData * cd2 = malloc(sizeof(struct CollisionData));
+				cd2->col_sig = p->col_sig;
+				cd2->id = p->id;
+				jeq_sendto(EVT_COLLISION, cd2, g_world.pd[i]->id);
 			}
 
 		}
