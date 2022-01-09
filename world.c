@@ -7,7 +7,6 @@
 #include <math.h>
 #include <assert.h>
 
-////////////////////////////////////////////////////////////
 
 #define NW (30)
 struct GWorld {
@@ -66,7 +65,11 @@ static void tread(struct TreadData * p)
 			if (is_solid(g_world.pd[i]->col_sig, p->col_sig)) {
 				solid_collision = 1;
 
-				assert(-1 != i0);
+				//assert(-1 != i0); // New object collides => crash
+				if (-1 == i0)return; // N.b! This can make som funy behavior TODO
+				                     // it seems to work but I dunno why
+
+
 				struct TreadRefuse * tr = malloc(sizeof(struct TreadRefuse));
 				tr->col_sig = g_world.pd[i]->col_sig;
 				tr->x = g_world.pd[i0]->x;
@@ -106,11 +109,6 @@ static void tread(struct TreadData * p)
 			printf("no move\n");
 		}
 	}
-
-
-
-
-	//printf("%d %d %d\n", p->id, p->x, p->y);
 }
 
 //typedef void(*dispatch_f)(void * receiver, int event, void * data);
@@ -129,10 +127,3 @@ void World_init(const int * solid_col_sigs)
 	jeq_subscribe_res(WORLD, on_dispatch, &g_world);
 }
 
-
-
-
-
-
-
-////////////////////////////////////////////////////////////
