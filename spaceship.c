@@ -323,8 +323,9 @@ void Spaceship_tick_2(struct Spaceship * me, jpfhandle_t h)//remove?
       p += 1;
       keys.k[KEY_SPACE] = 'x';
     }
-	if (p)
-		printf("%s", keys.k);
+	if (p) {
+		//printf("%s", keys.k);
+	}
 
 
 
