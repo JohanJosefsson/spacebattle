@@ -42,6 +42,13 @@ static const int solid_col_sigs[] = {
 
 void jpf_init()
 {
+  // Make it possible to call several times
+  static int is_inited = 0;
+  if(is_inited) {
+    return;
+  }
+  is_inited = 1;
+
 	jeq_init(NOF_SUBS);
 	World_init(solid_col_sigs);
 }

@@ -96,6 +96,7 @@ static void on_dispatch(void * receiver, int ev, void * data)
 {
 	struct Spaceship * me = receiver;
 	//printf("on_dispatch e=%lu u=%d sub=%d\n", ev , me->usr, me->sub);
+	struct CollisionData * cd = 0;
 
 	switch(ev) {
 	case EVT_W:
@@ -126,7 +127,7 @@ static void on_dispatch(void * receiver, int ev, void * data)
 		me->vel_y = -1*sgn(me->vel_y)*0.5;
 		break;
 	case EVT_COLLISION:
-		struct CollisionData * cd = data;
+		cd = data;
 		printf("SPACESHIP collision %d\n", cd->id);
 		if (cd->id != me->laser.sub) {
 			me->state = broken;
@@ -142,6 +143,7 @@ static void on_dispatch_laser(void * receiver, int ev, void * data)
 {
 	struct Laser * me = receiver;
 	//printf("on_dispatch e=%lu u=%d sub=%d\n", ev , me->usr, me->sub);
+	struct CollisionData * cd = 0;
 
 	switch (ev) {
 	case EVT_TICK:
@@ -150,7 +152,7 @@ static void on_dispatch_laser(void * receiver, int ev, void * data)
 		break;
 
 	case EVT_COLLISION:
-		struct CollisionData * cd = data;
+		cd = data;
 		printf("laser_ collision %d\n", cd->id);
 		break;
 
