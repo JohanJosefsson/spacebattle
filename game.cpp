@@ -39,10 +39,10 @@ void Game::processEvents()
 		switch (event.type)
 		{
 		case sf::Event::KeyPressed:
-			handlePlayerInput(event.key.code, true);
+			handlePlayerInput(event.key, true);
 			break;
 		case sf::Event::KeyReleased:
-			handlePlayerInput(event.key.code, false);
+			handlePlayerInput(event.key, false);
 			break;
 		case sf::Event::Closed:
 			mWindow.close();
@@ -79,9 +79,9 @@ static struct Userinput{
 } userinput;
 
 
-void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed)
+void Game::handlePlayerInput(sf::Event::KeyEvent ke, bool isPressed)
 {
-
+	sf::Keyboard::Key key = ke.code;
 	int n = -1;
 	switch(key) {
 	case sf::Keyboard::Num0:
@@ -118,9 +118,18 @@ void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed)
 	if (n != -1) {
 		userinput.cur = n;
 
-		if (!userinput.users[n]) {
-			jpf_on_new_user(n);
-			userinput.users[n] = 1;
+		if (!ke.shift) {
+			if (!userinput.users[n]) {
+				jpf_on_new_user(n);
+				userinput.users[n] = 1;
+			}
+		}
+		else {
+			if (userinput.users[n]) {
+				jpf_on_remove_user(n);
+				userinput.users[n] = 0;
+				userinput.cur = -1;
+			}
 		}
 	}
 

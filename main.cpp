@@ -4,5 +4,6 @@ int main()
 {
 	Game game;
 	game.Run();
-	return 0;
+	printf("hello world\n");
+	return 0;	
 }

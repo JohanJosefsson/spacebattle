@@ -5,7 +5,7 @@
 #define BC (-1) /* broadcast */
 
 #define QS (100) /* Queue size */
-#define NSUBS (100)
+#define NSUBS (10)
 struct GEvQ {
 	int head;
 	int tail;
@@ -13,7 +13,7 @@ struct GEvQ {
 		int evid;
 		void * data;
 		int dest;
-	}q[100];
+	}q[QS];
 }g_evq;
 
 void jeq_sendto(int evid, void * data, int dest)
@@ -46,8 +46,14 @@ void jeq_send_now(int evid, void * data, int dest)
 struct {
 	int nextindex;
 	int n_res; // Number of reserved
-	dispatch_f dispatch[NSUBS];
-	void * receiver[NSUBS];
+	//dispatch_f dispatch[NSUBS];
+	//void * receiver[NSUBS];
+	//int alive[NSUBS];
+	struct Subr {
+		dispatch_f dispatch;
+		void * receiver;
+		int alive;
+	}subr[NSUBS];
 }g_sublist;
 
 
@@ -67,22 +73,37 @@ void jeq_init(int n)
 int jeq_subscribe(dispatch_f on_dispatch, void * data)
 {
 	int ret = g_sublist.nextindex;
-	g_sublist.receiver[g_sublist.nextindex] = data;
-	g_sublist.dispatch[g_sublist.nextindex++] = on_dispatch;
+	g_sublist.subr[g_sublist.nextindex].receiver = data;
+	g_sublist.subr[g_sublist.nextindex].dispatch = on_dispatch;
+
+	//g_sublist.nextindex++;
+	int new_next = g_sublist.nextindex;
+	int asscnt = 0;
+	do {
+		asscnt++;
+		assert(asscnt <= NSUBS);
+		new_next++;
+		if (new_next == NSUBS) { new_next = g_sublist.n_res; }
+	}while(0 != g_sublist.subr[new_next].alive);
+	g_sublist.nextindex = new_next;
+
 	assert(g_sublist.nextindex < NSUBS);
+ 	g_sublist.subr[ret].alive = 1;
+	assert(ret < NSUBS);
 	return ret;
 }
 
 void jeq_subscribe_res(int n, dispatch_f on_dispatch, void * data)
 {
 	assert(n < g_sublist.n_res);
-	g_sublist.receiver[n] = data;
-	g_sublist.dispatch[n] = on_dispatch;
+	g_sublist.subr[n].alive = 1;
+	g_sublist.subr[n].receiver = data;
+	g_sublist.subr[n].dispatch = on_dispatch;
 }
 
 void jeq_unsub(int subid)
 {
-	assert(0); // Not yet implemented
+	g_sublist.subr[subid].alive = 0;
 }
 
 /* return nonzero if queue empty */
@@ -93,12 +114,16 @@ int jeq_dispatch(void)
 		/* dispatch from the head */
 		const int h = g_evq.head;
 		if (BC == g_evq.q[h].dest) {
-			for (int i = 0; i < g_sublist.nextindex; i++) {
-				g_sublist.dispatch[i](g_sublist.receiver[i], g_evq.q[h].evid, g_evq.q[h].data);
+			for (int i = 0; i < NSUBS/*g_sublist.nextindex*/; i++) {
+				if (g_sublist.subr[i].alive) {
+					g_sublist.subr[i].dispatch(g_sublist.subr[i].receiver, g_evq.q[h].evid, g_evq.q[h].data);
+				}
 			}
 		}
 		else {
-			g_sublist.dispatch[g_evq.q[h].dest](g_sublist.receiver[g_evq.q[h].dest], g_evq.q[h].evid, g_evq.q[h].data);
+			if (g_sublist.subr[g_evq.q[h].dest].alive) {
+				g_sublist.subr[g_evq.q[h].dest].dispatch(g_sublist.subr[g_evq.q[h].dest].receiver, g_evq.q[h].evid, g_evq.q[h].data);
+			}
 		}
 		if(g_evq.q[h].data)free(g_evq.q[h].data);
 

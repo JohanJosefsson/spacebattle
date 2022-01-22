@@ -191,6 +191,29 @@ void Spaceship_deinit(struct Spaceship * me)
     jpf_release_sprite(me->spid_spaceship);
     jpf_release_sprite(me->spid_broken);
     jpf_release_sprite(me->laser.spid);
+	jpf_release_sprite(me->laser.spid);
+
+	jeq_unsub(me->sub);
+	jeq_unsub(me->laser.sub);
+
+
+
+	{
+		struct LeaveData * p = malloc(sizeof(struct LeaveData));
+		p->id = me->sub;
+		jeq_sendto(EVT_LEAVE, p, WORLD);
+	}
+	{
+		struct LeaveData * p = malloc(sizeof(struct LeaveData));
+		p->id = me->laser.sub;
+		jeq_sendto(EVT_LEAVE, p, WORLD);
+	}
+
+
+
+
+
+
 }
 
 static void Spaceship_fire(struct Spaceship * me)

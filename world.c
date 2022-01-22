@@ -35,12 +35,14 @@ static int is_solid(int s1, int s2) {
 static void tread(struct TreadData * p)
 {
 	int i0 = -1; // The users current index
+	int cnt = 0; // logging
 	for (int i = 0; i < NW; i++) {
 		if (g_world.pd[i] && p->id == g_world.pd[i]->id) {
 			i0 = i;
 		}
+		if (g_world.pd[i])cnt++;
 	}
-
+	printf("World %d objects\n", cnt);
 
 	int in = -1; // Index New
 	int solid_collision = 0; // collision between two solids is detected
@@ -111,6 +113,27 @@ static void tread(struct TreadData * p)
 	}
 }
 
+
+static void leave(struct LeaveData * p)
+{
+	printf("leave() %d ", p->id);
+	int i0 = -1; // The users current index
+	for (int i = 0; i < NW; i++) {
+		if (g_world.pd[i] && p->id == g_world.pd[i]->id) {
+			printf(" -> %d", g_world.pd[i]->id);
+			free(g_world.pd[i]);
+			g_world.pd[i] = 0;
+		}
+	}
+	printf(" .\n");
+
+}
+
+
+
+
+
+
 //typedef void(*dispatch_f)(void * receiver, int event, void * data);
 //static void on_dispatch(void * receiver, int ev, void * data)
 static void on_dispatch(void * receiver, int ev, void * data)
@@ -118,6 +141,9 @@ static void on_dispatch(void * receiver, int ev, void * data)
 	switch (ev) {
 	case EVT_TREAD:
 		tread((struct TreadData *)data);
+		break;
+	case EVT_LEAVE:
+		leave((struct LeaveData *)data);
 		break;
 	}
 }

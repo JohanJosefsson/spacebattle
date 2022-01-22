@@ -15,7 +15,7 @@ private:
 	void processEvents();
 	void update(sf::Time deltaTime);
 	void render();
-	void handlePlayerInput(sf::Keyboard::Key key, bool isPressed);
+	void handlePlayerInput(sf::Event::KeyEvent ke, bool isPressed);
 
 	sf::RenderWindow mWindow;
 
