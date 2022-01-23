@@ -1,0 +1,14 @@
+[Unit]
+Description=jcserv
+After=network.target
+
+[Service]
+ExecStart=/website/jcserv/jcserv
+WorkingDirectory=/website/jcserv
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target

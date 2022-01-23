@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #f1f1f1;
+}
+</style>
+</head>
+<body onload="startGame()">
+<script>
+
+var exampleSocket = new WebSocket("ws://pappaochson.se:7682/", "lws-minimal");
+var sprites = new Array(100);
+var drawList = new Array(100);
+var numInDrawList = 0;
+
+exampleSocket.onopen = function (event) {
+	      sendMsg("client is open");
+};
+
+exampleSocket.onclose = function (event) {
+	      console.log("socket closed");
+};
+
+exampleSocket.onmessage = function (event) {
+        //console.log(event.data);
+
+        var obj = JSON.parse(event.data);
+        if("jpfcmd" in obj) {
+          console.log(event.data);
+          cmd = obj["jpfcmd"];
+          switch(cmd)  {
+          case "createsprite":
+		sprites[obj["spid"]] = new sprite(32, 32, obj["src"]);
+                console.log("created new sprite")
+            break;
+          case "draw":
+            drawList[numInDrawList] = obj;
+            numInDrawList++;
+            break;
+          case "update":
+		updateGameArea2();
+            numInDrawList = 0;
+            console.log("updated");
+            break;
+          default:
+            console.log("Unknown jpf command: " + event.data);
+          return;
+          }
+        } else {
+          console.log("Unknown message: " + event.data);
+        }
+}
+
+function sendMsg(msg) {
+	var obj = {}
+	obj["mess"] = msg;
+        exampleSocket.send(JSON.stringify(obj));
+}
+
+function sendKeyUp(msg) {
+	var obj = {}
+	obj["keyup"] = msg;
+        console.log(msg);
+        exampleSocket.send(JSON.stringify(obj));
+}
+
+function sendKeyDown(msg) {
+	var obj = {}
+	obj["keydn"] = msg;
+        console.log(msg);
+        exampleSocket.send(JSON.stringify(obj));
+}
+
+function startGame() {
+        myGameArea.start();
+    	setMyKeyDownListener();
+    	setMyKeyUpListener();
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 480;
+        this.canvas.height = 270;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+    },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+
+function sprite(width, height, imgsrc) {
+    this.width = width;
+    this.height = height;
+    this.type = "image"
+    this.image = new Image();
+    this.image.src = imgsrc;
+    this.update = function(x, y, r) {
+        ctx = myGameArea.context;
+        ctx.save();
+	ctx.translate(x + this.width/2, y + this.height/2);
+	ctx.rotate(r * Math.PI / 180);
+	ctx.translate(-1*(x + this.width/2), -1*(y + this.height/2));
+
+        ctx.drawImage(this.image, 
+            x, 
+            y,
+            this.width, this.height);
+        ctx.restore();
+    }
+}
+
+
+function updateGameArea2() {
+    myGameArea.clear();
+	for (i = 0; i < numInDrawList; i++) {
+                let d = drawList[i]; // draw object
+                console.log(d);
+                sprites[d["spid"]].update(d["x"], d["y"], d["r"]);
+		//pieces[key].update();
+	}
+}
+
+function setMyKeyDownListener() {
+    window.addEventListener(
+      "keydown",
+      function(event) {KeyEvents(event)}
+    )
+}
+
+function setMyKeyUpListener() {
+    window.addEventListener(
+      "keyup",
+      function(event) {KeyEvents(event)}
+    )
+}
+
+function KeyEvents (event) {
+    var c = "";
+    if(event["type"] == "keydown" || event["type"] == "keyup") {
+      switch(event.key) {
+      case "a":
+      case "w":
+      case "s":
+      case "d":
+      case " ":
+       	c = event.key;
+        break;
+      case "ArrowUp":
+       	c = "w";
+       	break;
+      case "ArrowDown":
+       	c = "s";
+       	break;
+      case "ArrowLeft":
+        c = "a";
+        break;
+      case "ArrowRight":
+        c = "d";
+        break;
+      default:
+	return;
+    }
+
+    if(event["type"] == "keydown") {
+      sendKeyDown(c);
+    }
+    if(event["type"] == "keyup") {
+      sendKeyUp(c);
+    }
+  }
+}
+
+</script>
+
+<p> Use wasd (arrow keys work on some browsers)<p>
+</body>
+</html>
