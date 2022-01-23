@@ -9,7 +9,7 @@
 #include "jeq.h"
 #include "world.h"
 
-#define MAX_USR (10)
+#define MAX_USR (5)
 
 /*
 enum Event {

@@ -42,7 +42,7 @@ static void tread(struct TreadData * p)
 		}
 		if (g_world.pd[i])cnt++;
 	}
-	printf("World %d objects\n", cnt);
+	//printf("World %d objects\n", cnt);
 
 	int in = -1; // Index New
 	int solid_collision = 0; // collision between two solids is detected

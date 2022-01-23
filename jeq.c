@@ -5,7 +5,7 @@
 #define BC (-1) /* broadcast */
 
 #define QS (100) /* Queue size */
-#define NSUBS (10)
+#define NSUBS (30)
 struct GEvQ {
 	int head;
 	int tail;
