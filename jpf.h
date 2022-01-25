@@ -17,7 +17,10 @@ extern "C" {
 	};
 	int is_key(jpfusr_t usr, enum keyevt);
   void ack_key(jpfusr_t h, enum keyevt k);
-
+  // Only meaaningful on the server
+#ifdef _WIN32
+#define ack_key(a,b)
+#endif
 	// In math.h? TODO
 #define PI (3.14159265)
 

@@ -67,7 +67,7 @@ void jpf_on_new_user(jpfusr_t usr)
 			p->s = new_Spaceship(usr);
 		//User_init(p, usr);
 	} else {
-		printf("New user rejected!\n");
+		//printf("New user rejected!\n");
 		return; // Ths will leak memory (pss)
 	}
 }

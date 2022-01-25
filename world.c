@@ -98,7 +98,7 @@ static void tread(struct TreadData * p)
 		struct TreadData * pp = malloc(sizeof(struct TreadData));
 		*pp = *p;
 		g_world.pd[in] = pp;
-		printf("adding  %d at index %d\n", p->id, in);
+		//printf("adding  %d at index %d\n", p->id, in);
 	}
 	else {
 		if (!solid_collision) {
@@ -108,7 +108,7 @@ static void tread(struct TreadData * p)
 			g_world.pd[i0] = pp;
 		}
 		else {
-			printf("no move\n");
+			//printf("no move\n");
 		}
 	}
 }
@@ -116,16 +116,16 @@ static void tread(struct TreadData * p)
 
 static void leave(struct LeaveData * p)
 {
-	printf("leave() %d ", p->id);
+	//printf("leave() %d ", p->id);
 	int i0 = -1; // The users current index
 	for (int i = 0; i < NW; i++) {
 		if (g_world.pd[i] && p->id == g_world.pd[i]->id) {
-			printf(" -> %d", g_world.pd[i]->id);
+			//printf(" -> %d", g_world.pd[i]->id);
 			free(g_world.pd[i]);
 			g_world.pd[i] = 0;
 		}
 	}
-	printf(" .\n");
+	//printf(" .\n");
 
 }
 
