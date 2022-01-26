@@ -291,6 +291,7 @@ callback_minimal(struct lws *wsi, enum lws_callback_reasons reason,
 
 	switch (reason) {
 	case LWS_CALLBACK_PROTOCOL_INIT:
+          printf("LWS_CALLBACK_PROTOCOL_INIT:\n");
 		vhd = lws_protocol_vh_priv_zalloc(lws_get_vhost(wsi),
 				lws_get_protocol(wsi),
 				sizeof(struct per_vhost_data__minimal));
