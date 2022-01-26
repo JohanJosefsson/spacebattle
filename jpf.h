@@ -16,6 +16,7 @@ extern "C" {
 		KEY_W, KEY_A, KEY_S, KEY_D, KEY_SPACE, NROF_KEYEVT
 	};
 	int is_key(jpfusr_t usr, enum keyevt);
+  void ack_key(jpfusr_t h, enum keyevt k);
 
 	// In math.h? TODO
 #define PI (3.14159265)

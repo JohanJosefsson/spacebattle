@@ -347,6 +347,7 @@ void Spaceship_tick_2(struct Spaceship * me, jpfhandle_t h)//remove?
     if(is_key(me->usr, KEY_SPACE)) {
       p += 1;
       keys.k[KEY_SPACE] = 'x';
+      //ack_key(me->usr, KEY_SPACE);
     }
 	if (p) {
 		//printf("%s", keys.k);
@@ -368,6 +369,7 @@ void Spaceship_tick_2(struct Spaceship * me, jpfhandle_t h)//remove?
 	}
 	if (is_key(me->usr, KEY_SPACE)) {
 		jeq_sendto(EVT_SPACE, 0, me->sub);
+      ack_key(me->usr, KEY_SPACE);
 	}
 #if 0
 	jeq_sendto(EVT_TICK, 0, me->sub);

@@ -179,7 +179,7 @@ void jpf_pf_tick(struct per_session_data__minimal * pss)
 void jpf_pf_draw(struct per_vhost_data__minimal *vhd)
 {
   jpf_on_draw((jpfhandle_t)vhd);
-  jpf_broadcast_string(vhd, "{ \"Update\":1 }");
+//  jpf_broadcast_string(vhd, "{ \"Update\":1 }");
   jpf_broadcast_string(vhd, "{ \"jpfcmd\":\"update\" }");
 }
 
@@ -247,11 +247,17 @@ int is_key(jpfusr_t h, enum keyevt k)
   struct per_session_data__minimal *pss = (struct per_session_data__minimal *)h;
   int ret = pss->keys[k];
   //pss->keys[k] = 0;
+//  if(KEY_SPACE==k && ret)pss->keys[KEY_SPACE] = 0;
 
   //if(ret)printf("is_key %i  %u\n", ret, (unsigned)h);
   return ret;
 }
 
+void ack_key(jpfusr_t h, enum keyevt k)
+{
+  struct per_session_data__minimal *pss = (struct per_session_data__minimal *)h;
+  pss->keys[k] = 0;
+}
 
 ////////////////////////////////
 
