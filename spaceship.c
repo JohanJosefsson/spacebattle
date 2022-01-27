@@ -120,6 +120,7 @@ static void on_dispatch(void * receiver, int ev, void * data)
 		break;
 	case EVT_TREAD_DENIED:
 		//printf("tread denied\n");
+                ;
 		struct TreadRefuse * tr = data;
 		me->x = tr->x;
 		me->y = tr->y;
