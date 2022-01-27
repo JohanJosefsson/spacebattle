@@ -19,7 +19,8 @@ enum Event {
 enum CollisionSignature {
 	COLSIG_PLAYER,
 	COLSIG_FIXED,
-	COLSIG_LASER
+	COLSIG_LASER,
+	COLSIG_NOTHING,
 };
 
 struct TreadData {

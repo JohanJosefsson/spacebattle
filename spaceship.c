@@ -130,7 +130,7 @@ static void on_dispatch(void * receiver, int ev, void * data)
 	case EVT_COLLISION:
 		cd = data;
 		//printf("SPACESHIP collision %d\n", cd->id);
-		if (cd->id != me->laser.sub) {
+		if (cd->col_sig  == COLSIG_LASER && cd->id != me->laser.sub) {
 			me->state = broken;
 		}
 		else {
@@ -315,7 +315,7 @@ void Spaceship_tick_2(struct Spaceship * me, jpfhandle_t h)//remove?
 
 
 		struct TreadData * p = malloc(sizeof(struct TreadData));
-		p->col_sig = COLSIG_LASER;
+		p->col_sig = me->laser.state == active ? COLSIG_LASER:COLSIG_NOTHING;
 		p->id = me->laser.sub;
 		p->x = me->laser.x;////
 		p->y = me->laser.y;/////
