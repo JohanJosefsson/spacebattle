@@ -14,10 +14,7 @@ static void Spaceship_accelerate(struct Spaceship * me);
 static void Spaceship_decelerate(struct Spaceship * me);
 static void Spaceship_fire(struct Spaceship * me);
 static void Spaceship_move(struct Spaceship * me);
-
-////
-void Spaceship_tick_2(struct Spaceship * me, jpfhandle_t h);
-
+void Spaceship_tick(struct Spaceship * me, jpfhandle_t h);
 
 
 /* Utility */
@@ -115,7 +112,7 @@ static void on_dispatch(void * receiver, int ev, void * data)
 		Spaceship_fire(me);
 		break;
 	case EVT_TICK:
-		Spaceship_tick_2(me, 0);
+		Spaceship_tick(me, 0);
 		Spaceship_move(me);
 		break;
 	case EVT_TREAD_DENIED:
@@ -298,12 +295,7 @@ static void Spaceship_move(struct Spaceship * me)
 	}
 }
 
-
-
 void Spaceship_tick(struct Spaceship * me, jpfhandle_t h)//remove?
-{}
-
-void Spaceship_tick_2(struct Spaceship * me, jpfhandle_t h)//remove?
 {
 	if (me->laser.tmo)me->laser.tmo--;
 	if (active == me->laser.state) {

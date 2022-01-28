@@ -1,7 +1,5 @@
 #include "jpf.h"
 
-
-
 enum Event {
 	EVT_W,
 	EVT_A,
@@ -45,11 +43,11 @@ struct LeaveData {
 	int id;
 };
 
-
+// These are the static queue subscribers. Those exist during the entire exeution
 enum Subs
 {
 	WORLD,
-	NOF_SUBS,
+	NOF_SUBS, // used in queue initalization
 };
 
 struct Spaceship;
