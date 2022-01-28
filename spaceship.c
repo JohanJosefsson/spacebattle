@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "spaceship.h"
+#include "spacebattle.h"
 #include "jeq.h"
 
 
@@ -24,17 +25,6 @@ static int sgn(int x)
 	if (x > 0)return 1;
 	return 0;
 }
-
-/*
-enum Event {
-	EVT_W,
-	EVT_A,
-	EVT_S,
-	EVT_D,
-	EVT_SPACE,
-	EVT_TICK,
-};
-*/
 enum spaceshipstate { flying, broken };
 enum laserstate { active, inactive };
 struct Spaceship {
@@ -71,19 +61,6 @@ struct Spaceship {
 void Spaceship_print(struct Spaceship * me)
 {
 
-#if 0
-	printf(
-		"x=%i\t"
-		"y=%i\t"
-		"vel_x=%f\t"
-		"vel_y=%f\t"
-		"angle=%f\n",
-		(int)me->x,
-		(int)me->y,
-		me->vel_x,
-		me->vel_y,
-		me->angle);
-#endif
 }
 
 
@@ -146,8 +123,6 @@ static void on_dispatch_laser(void * receiver, int ev, void * data)
 
 	switch (ev) {
 	case EVT_TICK:
-		//		Spaceship_tick_2(me, 0);
-		//		Spaceship_move(me);
 		break;
 
 	case EVT_COLLISION:
@@ -207,12 +182,6 @@ void Spaceship_deinit(struct Spaceship * me)
 		p->id = me->laser.sub;
 		jeq_sendto(EVT_LEAVE, p, WORLD);
 	}
-
-
-
-
-
-
 }
 
 static void Spaceship_fire(struct Spaceship * me)
@@ -291,7 +260,6 @@ static void Spaceship_move(struct Spaceship * me)
 		me->old.y = me->y;
 		//printf("%f %f %f %f\n", me->x, me->old.x, me->y, me->old.y);
 
-
 	}
 }
 
@@ -314,8 +282,6 @@ void Spaceship_tick(struct Spaceship * me, jpfhandle_t h)//remove?
 		jeq_sendto(EVT_TREAD, p, WORLD);
 
 	}
-	//  me->x += 1;
-	//  me->x %= MAX_X;
 	if (broken == me->state)return;
 
 	//  KEY_W, KEY_A, KEY_S, KEY_D, KEY_SPACE, NROF_KEYEVT
@@ -365,11 +331,6 @@ void Spaceship_tick(struct Spaceship * me, jpfhandle_t h)//remove?
 		jeq_sendto(EVT_SPACE, 0, me->sub);
 		ack_key(me->usr, KEY_SPACE);
 	}
-#if 0
-	jeq_sendto(EVT_TICK, 0, me->sub);
-
-	while (!jeq_dispatch());
-#endif
 }
 
 int Spaceship_draw(struct Spaceship * me, jpfhandle_t h)

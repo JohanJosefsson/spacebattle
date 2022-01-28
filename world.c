@@ -1,4 +1,4 @@
-#include "spaceship.h"
+#include "spacebattle.h"
 #include "jeq.h"
 #include "world.h"
 
@@ -133,9 +133,6 @@ static void leave(struct LeaveData * p)
 
 
 
-
-//typedef void(*dispatch_f)(void * receiver, int event, void * data);
-//static void on_dispatch(void * receiver, int ev, void * data)
 static void on_dispatch(void * receiver, int ev, void * data)
 {
 	switch (ev) {

@@ -46,9 +46,6 @@ void jeq_send_now(int evid, void * data, int dest)
 struct {
 	int nextindex;
 	int n_res; // Number of reserved
-	//dispatch_f dispatch[NSUBS];
-	//void * receiver[NSUBS];
-	//int alive[NSUBS];
 	struct Subr {
 		dispatch_f dispatch;
 		void * receiver;
@@ -65,8 +62,6 @@ void jeq_init(int n)
 	g_sublist.nextindex = n;
 	g_sublist.n_res = n;
 }
-
-
 
 
 
