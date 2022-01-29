@@ -10,32 +10,38 @@ enum Event {
 
 	EVT_TREAD,
 	EVT_TREAD_DENIED,
-	EVT_COLLISION,
+//	EVT_COLLISION,
 	EVT_LEAVE,
-};
+	COLSIG_PLAYER,
+	COLSIG_FIXED,
+	COLSIG_LASER,
+	COLSIG_NOTHING,
 
+
+};
+/*
 enum CollisionSignature {
 	COLSIG_PLAYER,
 	COLSIG_FIXED,
 	COLSIG_LASER,
 	COLSIG_NOTHING,
 };
-
+*/
 struct TreadData {
 	int id;
 	int x;
 	int y;
-	enum CollisionSignature col_sig;
+	int col_sig;
 };
 struct TreadRefuse {
-	enum CollisionSignature col_sig;
+	int col_sig;
 	int x;
 	int y;
 };
 struct CollisionData {
 	//int x;
 	//int y;
-	enum CollisionSignature col_sig;
+//	enum CollisionSignature col_sig;
 	int id;
 };
 

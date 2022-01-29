@@ -106,10 +106,10 @@ static void on_dispatch(void * receiver, int ev, void * data)
 		me->vel_x = -1 * sgn(me->vel_x)*0.5;
 		me->vel_y = -1 * sgn(me->vel_y)*0.5;
 		break;
-	case EVT_COLLISION:
+	case COLSIG_LASER:
 		cd = data;
 		//printf("SPACESHIP collision %d\n", cd->id);
-		if (cd->col_sig  == COLSIG_LASER && cd->id != me->laser.sub) {
+		if (/*cd->col_sig  == COLSIG_LASER &&*/ cd->id != me->laser.sub) {
 			me->state = broken;
 		}
 		else {
@@ -129,12 +129,12 @@ static void on_dispatch_laser(void * receiver, int ev, void * data)
 	switch (ev) {
 	case EVT_TICK:
 		break;
-
+/*
 	case EVT_COLLISION:
 		cd = data;
 		//printf("laser_ collision %d\n", cd->id);
 		break;
-
+		*/
 	}
 }
 

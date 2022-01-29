@@ -79,13 +79,13 @@ static void tread(struct TreadData * p)
 				jeq_sendto(EVT_TREAD_DENIED, tr, g_world.pd[i0]->id);////
 			} else {
 				struct CollisionData * cd1 = malloc(sizeof(struct CollisionData));
-				cd1->col_sig = g_world.pd[i]->col_sig;
+				//cd1->col_sig = g_world.pd[i]->col_sig;
 				cd1->id = g_world.pd[i]->id;
-				jeq_sendto(EVT_COLLISION, cd1, p->id);
+				jeq_sendto(g_world.pd[i]->col_sig, cd1, p->id);
 				struct CollisionData * cd2 = malloc(sizeof(struct CollisionData));
-				cd2->col_sig = p->col_sig;
+				//cd2->col_sig = p->col_sig;
 				cd2->id = p->id;
-				jeq_sendto(EVT_COLLISION, cd2, g_world.pd[i]->id);
+				jeq_sendto(p->col_sig, cd2, g_world.pd[i]->id);
 			}
 
 		}
