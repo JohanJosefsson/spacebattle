@@ -18,13 +18,20 @@ static void Spaceship_move(struct Spaceship * me);
 void Spaceship_tick(struct Spaceship * me, jpfhandle_t h);
 
 
-/* Utility */
+/* Utilities */
 static int sgn(int x)
 {
 	if (x < 0)return -1;
 	if (x > 0)return 1;
 	return 0;
 }
+
+static int abs(int x)
+{
+	return(x*sgn(x));
+}
+
+
 enum spaceshipstate { flying, broken };
 enum laserstate { active, inactive };
 struct Spaceship {
@@ -63,8 +70,6 @@ void Spaceship_print(struct Spaceship * me)
 
 }
 
-
-// typedef void(*dispatch_f)(int event, void * data);
 
 static void on_dispatch(void * receiver, int ev, void * data)
 {
