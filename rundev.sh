@@ -1,8 +1,8 @@
 #!/bin/sh
 ip=`hostname -I | tr -d ' '`
-cat game2.html | sed 's/\/ws:80/:7683/g' | sed "s/pappaochson\.se/$ip/g" > /website/www/gamedev.html
-cp *.png /website/www/
-echo "http://$ip/gamedev.html"
+cat game.html | sed 's/\/ws:80/:7683/g' | sed "s/pappaochson\.se/$ip/g" > /website/www/tst/gamedev.html
+cp *.png /website/www/tst
+echo "http://$ip/tst/gamedev.html"
 cp lws-minimal-ws-server jcserv
-cp joystick.js /website/www/
+cp joystick.js /website/www/tst
 ./jcserv

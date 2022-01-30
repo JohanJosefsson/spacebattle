@@ -28,7 +28,7 @@
 // (Global i.e. no vhost handling)
 static struct {
   struct {
-    char src[20];
+    char src[40];
     int inuse;
   }arr[100];
   int cnt;

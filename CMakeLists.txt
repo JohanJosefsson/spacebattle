@@ -6,7 +6,7 @@ include(CheckCSourceCompiles)
 include(LwsCheckRequirements)
 
 set(SAMP lws-minimal-ws-server)
-set(SRCS minimal-ws-server.c spacebattle.c configdata.c configdata.c jpf.h spacebattle.c jeq.c world.c spaceship.c)
+set(SRCS minimal-ws-server.c spacebattle.c configdata.c configdata.c jpf.h spacebattle.c jeq.c world.c spaceship.c jsm.c)
 
 set(requirements 1)
 require_lws_config(LWS_ROLE_WS 1 requirements)
