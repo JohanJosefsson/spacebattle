@@ -15,7 +15,6 @@ static void Spaceship_accelerate(struct Spaceship * me);
 static void Spaceship_decelerate(struct Spaceship * me);
 static void Spaceship_fire(struct Spaceship * me);
 static void Spaceship_move(struct Spaceship * me);
-void Spaceship_tick(struct Spaceship * me, jpfhandle_t h);
 
 
 /* Utilities */
@@ -128,6 +127,28 @@ static void on_dispatch_laser(void * receiver, int ev, void * data)
 
 	switch (ev) {
 	case EVT_TICK:
+		if (me->tmo)me->tmo--;
+		if (active == me->state) {
+			me->x += 15 * cos(me->angle * PI / 180.0);
+			me->y += 15 * sin(me->angle * PI / 180.0);
+			if (me->x < 0 || me->x > MAX_X || me->y < 0 || me->y > MAX_Y) {
+				me->state = inactive;
+			}
+
+
+			struct TreadData * p = malloc(sizeof(struct TreadData));
+			p->col_sig = me->state == active ? COLSIG_LASER : COLSIG_NOTHING;
+			p->id = me->sub;
+			p->x = me->x;////
+			p->y = me->y;/////
+			jeq_sendto(EVT_TREAD, p, WORLD);
+
+		}
+
+
+
+
+
 		break;
 /*
 	case EVT_COLLISION:
@@ -270,6 +291,7 @@ static void Spaceship_move(struct Spaceship * me)
 
 void Spaceship_tick(struct Spaceship * me, jpfhandle_t h)//remove?
 {
+	/*
 	if (me->laser.tmo)me->laser.tmo--;
 	if (active == me->laser.state) {
 		me->laser.x += 15 * cos(me->laser.angle * PI / 180.0);
@@ -287,6 +309,7 @@ void Spaceship_tick(struct Spaceship * me, jpfhandle_t h)//remove?
 		jeq_sendto(EVT_TREAD, p, WORLD);
 
 	}
+	*/
 	if (broken == me->state)return;
 
 	//  KEY_W, KEY_A, KEY_S, KEY_D, KEY_SPACE, NROF_KEYEVT
