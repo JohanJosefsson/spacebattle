@@ -7,7 +7,7 @@
 #include "spacebattle.h"
 #include "jeq.h"
 #include "jsm.h"
-
+#include "squares.h"
 
 static void Spaceship_turn_left(struct Spaceship * me);
 static void Spaceship_turn_right(struct Spaceship * me);
@@ -444,7 +444,7 @@ static void on_dispatch_laser(void * receiver, int ev, void * data)
 }
 
 
-
+static int g_nextSqCoord;
 
 void Spaceship_init(struct Spaceship * me, jpfusr_t usr)
 {
@@ -454,8 +454,16 @@ void Spaceship_init(struct Spaceship * me, jpfusr_t usr)
 	me->sc.state_funcs_p = state_funcs;
 
 	me->usr = usr;
-	me->x = usr % MAX_X;
-	me->y = usr % MAX_Y;
+
+	//me->x = usr % MAX_X;
+	//me->y = usr % MAX_Y;
+	struct SqCoord coord;
+	g_nextSqCoord = Sq_getNextCoord('V', g_nextSqCoord, &coord);
+	me->x = coord.x;
+	me->y = coord.y;
+
+
+
 	me->vel_x = 0.0;
 	me->vel_y = 0.0;
 	me->angle = 0.0;

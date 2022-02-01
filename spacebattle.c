@@ -9,7 +9,8 @@
 
 #include "jeq.h"
 #include "world.h"
-
+#include "squares.h"
+#include "fixed.h"
 #define MAX_USR (5)
 
 struct User {
@@ -26,16 +27,25 @@ static struct {
 static const int solid_col_sigs[] = {
 	COLSIG_PLAYER,
 	COLSIG_FIXED,
+	COLSIG_STONE,
 	-1
 };
 
 void jpf_init()
 {
+
+
   // Make it possible to call several times
   static int is_inited = 0;
   if(is_inited) {
     return;
   }
+
+  Sq_init();
+  fx_init();
+
+
+
   is_inited = 1;
 
 	jeq_init(NOF_SUBS);
@@ -94,6 +104,7 @@ void jpf_on_draw(jpfhandle_t h)
 			if(!r)g_app.users[i].usr= 0;
 		}
 	}
+	fx_draw(h);
 }
 
 

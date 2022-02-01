@@ -21,7 +21,7 @@ int jsm_is_in_state(struct StateChart * sc, int state) {
 	return(isSuperStateOf(sc, state, sc->current_state));
 }
 
-//#define HIDE
+#define HIDE
 #ifdef HIDE
 #define PRINTF(...)
 #else

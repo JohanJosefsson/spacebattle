@@ -32,6 +32,20 @@ static int is_solid(int s1, int s2) {
 	return 0;
 }
 
+
+static add_fixed(struct TreadData * p)
+{
+	for (int i = 0; i < NW; i++) {
+		if (!g_world.pd[i]) {
+			printf("fixed %d\n", i);
+			struct TreadData * td = malloc(sizeof(struct TreadData));
+			*td = *p;
+			g_world.pd[i] = td;
+			break;
+		}
+	}
+}
+
 static void tread(struct TreadData * p)
 {
 	int i0 = -1; // The users current index
@@ -106,6 +120,7 @@ static void tread(struct TreadData * p)
 			*pp = *p;
 			free(g_world.pd[i0]);
 			g_world.pd[i0] = pp;
+			printf("i0=%d\n", i0);
 		}
 		else {
 			//printf("no move\n");
@@ -137,10 +152,14 @@ static void on_dispatch(void * receiver, int ev, void * data)
 {
 	switch (ev) {
 	case EVT_TREAD:
+		//if (((struct TreadData *)data)->col_sig == COLSIG_FIXED)printf("FIXED");
 		tread((struct TreadData *)data);
 		break;
 	case EVT_LEAVE:
 		leave((struct LeaveData *)data);
+		break;
+	case EVT_ADD_FIXED:
+		add_fixed((struct TreadData *)data);
 		break;
 	}
 }
