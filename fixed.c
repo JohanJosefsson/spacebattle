@@ -10,7 +10,7 @@ struct {
 
 static void on_dispatch(void * receiver, int ev, void * data)
 {
-	printf("%d\n", ev);
+	//printf("fixed on_dispatch: %d\n", ev);
 }
 
 

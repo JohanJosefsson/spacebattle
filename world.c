@@ -120,7 +120,7 @@ static void tread(struct TreadData * p)
 			*pp = *p;
 			free(g_world.pd[i0]);
 			g_world.pd[i0] = pp;
-			printf("i0=%d\n", i0);
+			//printf("i0=%d\n", i0);
 		}
 		else {
 			//printf("no move\n");

@@ -41,6 +41,7 @@ void jpf_init()
     return;
   }
 
+	jeq_init(NOF_SUBS);
   Sq_init();
   fx_init();
 
@@ -48,7 +49,6 @@ void jpf_init()
 
   is_inited = 1;
 
-	jeq_init(NOF_SUBS);
 	World_init(solid_col_sigs);
 }
 
