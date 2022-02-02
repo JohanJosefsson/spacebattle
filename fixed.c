@@ -11,6 +11,7 @@ struct {
 	struct Bluestar
 	{
 		int cnt;
+		int rot;
 	}bluestar;
 }g_fx;
 
@@ -19,6 +20,7 @@ static void on_dispatch(void * receiver, int ev, void * data)
 	switch (ev)
 	{
 	case EVT_TICK:
+		g_fx.bluestar.rot += 1.2;
 		g_fx.bluestar.cnt++;
 		if (g_fx.bluestar.cnt > 300)
 		{
@@ -94,7 +96,7 @@ void fx_draw(jpfhandle_t h)
 
 	do {
 		iter = Sq_getNextCoord('*', iter, &coord);
-		jpf_draw_sprite(h, g_fx.spid_bluestar, coord.x, coord.y, 0);
+		jpf_draw_sprite(h, g_fx.spid_bluestar, coord.x, coord.y, g_fx.bluestar.rot);
 	} while (iter);
 
 	do {

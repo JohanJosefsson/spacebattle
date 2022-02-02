@@ -338,15 +338,15 @@ static int broken_handler(struct Spaceship * me, int ev)
 	void * data = me->evtData_p;
 	switch (ev) {
 	case EVT_A:
-		me->angle -= 5.0;
+		me->angle -= 2.0;
 		//Spaceship_turn_left(me);
 		return 1;
 	case EVT_D:
-		me->angle += 5.0;
+		me->angle += 1.0;
 		//Spaceship_turn_right(me);
 		return 1;
 	case EVT_TICK:
-		me->angle -= 1.2;
+		me->angle -= 0.4;
 		Spaceship_tick(me, 0);
 		Spaceship_move(me);
 		return 1;
