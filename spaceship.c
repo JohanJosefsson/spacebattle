@@ -204,6 +204,16 @@ static int flying_handler(struct Spaceship * me, int ev)
 		me->vel_x = -1 * sgn(me->vel_x)*0.5;
 		me->vel_y = -1 * sgn(me->vel_y)*0.5;
 		return 1;
+
+	case COLSIG_BLUESTAR:
+		CHANGE(&(me->sc), protected_s);
+		return 1;
+	case COLSIG_WORKSHOP:
+		if (me->vel_x < 1.0 && me->vel_y < 1.0) {
+			CHANGE(&(me->sc), flying_s);
+		}
+		return 1;
+
 #if 0
 	case COLSIG_LASER:
 		cd = data;
@@ -243,10 +253,25 @@ static void normal_on_entry(struct Spaceship * me)
 	me->cnt = 0;
 	me->health = 1.0;
 }
-static int protected_handler(struct Spaceship * me, int ev) { return 0; }
-static void protected_on_entry(struct Spaceship * me) { return 0; }
+static int protected_handler(struct Spaceship * me, int ev) {
+	switch (ev) {
+	case COLSIG_LASER:
+		return 1;
+//	case COLSIG_WORKSHOP:
+//		return 0;
+	case EVT_BLUESTAR_RST:
+		CHANGE(&(me->sc), unprotected_s);
+		return 1;
+	}
+	return 0;
+}
+static void protected_on_entry(struct Spaceship * me) {
+	me->cur_spid = me->spid_protected;
+}
 static int unprotected_handler(struct Spaceship * me, int ev) { return 0; }
-static void unprotected_on_entry(struct Spaceship * me) {}
+static void unprotected_on_entry(struct Spaceship * me) {
+	me->cur_spid = me->spid_spaceship;
+}
 static int quarterbroken_handler(struct Spaceship * me, int ev) { 
 	struct CollisionData * cd = 0;
 	void * data = me->evtData_p;
@@ -255,7 +280,7 @@ static int quarterbroken_handler(struct Spaceship * me, int ev) {
 		cd = data;
 		if (cd->id != me->laser.sub) {
 			me->cnt++;
-			if(me->cnt > 7)CHANGE(&(me->sc), halfbroken_s);
+			if(me->cnt > 5)CHANGE(&(me->sc), halfbroken_s);
 		}
 		return 1;
 	}
@@ -264,7 +289,7 @@ static int quarterbroken_handler(struct Spaceship * me, int ev) {
 static void quarterbroken_on_entry(struct Spaceship * me) {
 	me->cur_spid = me->spid_quarterbroken;
 	me->cnt = 0;
-	me->health = 0.75;
+	me->health = 0.2;
 }
 static int halfbroken_handler(struct Spaceship * me, int ev) {
 	struct CollisionData * cd = 0;
@@ -274,7 +299,7 @@ static int halfbroken_handler(struct Spaceship * me, int ev) {
 		cd = data;
 		if (cd->id != me->laser.sub) {
 			me->cnt++;
-			if (me->cnt > 12)CHANGE(&(me->sc), threequarterbroken_s);
+			if (me->cnt > 7)CHANGE(&(me->sc), threequarterbroken_s);
 		}
 		return 1;
 	}
@@ -283,12 +308,14 @@ static int halfbroken_handler(struct Spaceship * me, int ev) {
 static void halfbroken_on_entry(struct Spaceship * me) {
 	me->cur_spid = me->spid_halfbroken;
 	me->cnt = 0;
-	me->health = 0.5;
+	me->health = 0.1;
 }
 static int threequarterbroken_handler(struct Spaceship * me, int ev) {
 	struct CollisionData * cd = 0;
 	void * data = me->evtData_p;
 	switch (ev) {
+	case EVT_A:
+		return 1;
 	case COLSIG_LASER:
 		cd = data;
 		if (cd->id != me->laser.sub) {
@@ -302,7 +329,7 @@ static int threequarterbroken_handler(struct Spaceship * me, int ev) {
 static void threequarterbroken_on_entry(struct Spaceship * me) {
 	me->cur_spid = me->spid_threequarterbroken;
 	me->cnt = 0;
-	me->health = 0.25;
+	me->health = 0.05;
 }
 static int broken_handler(struct Spaceship * me, int ev)
 {
@@ -311,12 +338,15 @@ static int broken_handler(struct Spaceship * me, int ev)
 	void * data = me->evtData_p;
 	switch (ev) {
 	case EVT_A:
-		Spaceship_turn_left(me);
+		me->angle -= 5.0;
+		//Spaceship_turn_left(me);
 		return 1;
 	case EVT_D:
-		Spaceship_turn_right(me);
+		me->angle += 5.0;
+		//Spaceship_turn_right(me);
 		return 1;
 	case EVT_TICK:
+		me->angle -= 1.2;
 		Spaceship_tick(me, 0);
 		Spaceship_move(me);
 		return 1;
@@ -327,6 +357,8 @@ static int broken_handler(struct Spaceship * me, int ev)
 static void broken_on_entry(struct Spaceship * me)
 {
 	printf("%s sub=%d\n", __FUNCTION__, me->sub);
+	me->vel_x = 0.0;
+	me->vel_y = 0.0;
 	me->cur_spid = me->spid_broken;
 }
 ////
@@ -428,11 +460,19 @@ static void on_dispatch_laser(void * receiver, int ev, void * data)
 			jeq_sendto(EVT_TREAD, p, WORLD);
 
 		}
+		break;
 
+	case COLSIG_FIXED:
+		if(active == me->state) {
+			struct TreadData * p = malloc(sizeof(struct TreadData));
+			p->col_sig = COLSIG_NOTHING;
+			p->id = me->sub;
+			p->x = me->x;////
+			p->y = me->y;/////
+			jeq_sendto(EVT_TREAD, p, WORLD);
 
-
-
-
+			me->state = inactive;
+		}
 		break;
 /*
 	case EVT_COLLISION:
@@ -535,12 +575,12 @@ static void Spaceship_destroy(struct Spaceship * me)
 
 static void Spaceship_turn_left(struct Spaceship * me)
 {
-	me->angle -= 4.5;
+	me->angle -= 4.5 * me->health;
 }
 
 static void Spaceship_turn_right(struct Spaceship * me)
 {
-	me->angle += 4.5;
+	me->angle += 4.5 * me->health;
 }
 
 static void Spaceship_accelerate(struct Spaceship * me)
