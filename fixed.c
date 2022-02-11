@@ -8,11 +8,17 @@ struct {
 	int spid_stone;
 	int spid_bluestar;
 	int spid_workshop;
+	int spids_comet[3];
 	struct Bluestar
 	{
 		int cnt;
 		int rot;
 	}bluestar;
+	struct Comet
+	{
+		int x;
+		int y;
+	}comet;
 }g_fx;
 
 static void on_dispatch(void * receiver, int ev, void * data)
@@ -20,6 +26,8 @@ static void on_dispatch(void * receiver, int ev, void * data)
 	switch (ev)
 	{
 	case EVT_TICK:
+
+		// Blueastar
 		g_fx.bluestar.rot += 1.2;
 		g_fx.bluestar.cnt++;
 		if (g_fx.bluestar.cnt > 300)
@@ -27,6 +35,19 @@ static void on_dispatch(void * receiver, int ev, void * data)
 			g_fx.bluestar.cnt = 0;
 			jeq_broadcast(EVT_BLUESTAR_RST, 0);
 		}
+
+		// Comet
+		g_fx.comet.y += 7;
+		g_fx.comet.y %= MAX_Y;
+
+		struct TreadData * p = malloc(sizeof(struct TreadData));
+		p->col_sig = COLSIG_LASER;
+		p->id = g_fx.sub;
+		p->x = g_fx.comet.x;////
+		p->y = g_fx.comet.y;/////
+		jeq_sendto(EVT_TREAD, p, WORLD);
+
+
 		break;
 	}
 	//printf("fixed on_dispatch: %d\n", ev);
@@ -41,14 +62,21 @@ void fx_init()
 	g_fx.spid_bluestar = jpf_create_sprite("bluestar.png");
 	g_fx.spid_workshop = jpf_create_sprite("workshop.png");
 
+	g_fx.spids_comet[0] = jpf_create_sprite("comet1.png");
+	g_fx.spids_comet[1] = jpf_create_sprite("comet2.png");
+	g_fx.spids_comet[2] = jpf_create_sprite("comet3.png");
+
 	struct SqCoord coord = { 0,0 };
 	int iter = 0;
+
+	g_fx.comet.x = (9 * 32);
+	g_fx.comet.y = 0;
 
 	do {
 		iter = Sq_getNextCoord('O', iter, &coord);
 		struct TreadData * p = malloc(sizeof(struct TreadData));
 		p->col_sig = COLSIG_FIXED;
-		p->id = g_fx.sub;
+		p->id = FIXED_SUB;
 		p->x = coord.x;
 		p->y = coord.y;
 		//printf("SEND iter=%d x=%d y=%d\n", iter, p->x, p->y);
@@ -56,12 +84,11 @@ void fx_init()
 		
 		//if (0 == iter)break;
 	} while (iter);
-
 	do {
 		iter = Sq_getNextCoord('*', iter, &coord);
 		struct TreadData * p = malloc(sizeof(struct TreadData));
 		p->col_sig = COLSIG_BLUESTAR;
-		p->id = g_fx.sub;
+		p->id = FIXED_SUB;
 		p->x = coord.x;
 		p->y = coord.y;
 		//printf("SEND iter=%d x=%d y=%d\n", iter, p->x, p->y);
@@ -69,11 +96,12 @@ void fx_init()
 
 		//if (0 == iter)break;
 	} while (iter);
+
 	do {
 		iter = Sq_getNextCoord('X', iter, &coord);
 		struct TreadData * p = malloc(sizeof(struct TreadData));
 		p->col_sig = COLSIG_WORKSHOP;
-		p->id = g_fx.sub;
+		p->id = FIXED_SUB;
 		p->x = coord.x;
 		p->y = coord.y;
 		//printf("SEND iter=%d x=%d y=%d\n", iter, p->x, p->y);
@@ -87,6 +115,8 @@ void fx_init()
 
 void fx_draw(jpfhandle_t h)
 {
+	jpf_draw_sprite(h, g_fx.spids_comet[(g_fx.comet.y)%3], g_fx.comet.x, g_fx.comet.y, 270);
+
 	struct SqCoord coord = { 0,0 };
 	int iter = 0;
 	do {

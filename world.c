@@ -8,7 +8,7 @@
 #include <assert.h>
 
 
-#define NW (30)
+#define NW (50)
 struct GWorld {
 	int x;
 	struct TreadData * pd[NW];
@@ -37,7 +37,8 @@ static add_fixed(struct TreadData * p)
 {
 	for (int i = 0; i < NW; i++) {
 		if (!g_world.pd[i]) {
-			printf("fixed %d\n", i);
+			p->id = FIXED_SUB;
+			printf("fixed %d %d\n", p->id, p->col_sig);
 			struct TreadData * td = malloc(sizeof(struct TreadData));
 			*td = *p;
 			g_world.pd[i] = td;

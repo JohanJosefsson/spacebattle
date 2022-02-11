@@ -57,6 +57,7 @@ struct LeaveData {
 enum Subs
 {
 	WORLD,
+	FIXED_SUB, // Special subscriber (id in world) for fixed things
 	NOF_SUBS, // used in queue initalization
 };
 
