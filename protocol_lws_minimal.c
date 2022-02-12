@@ -18,6 +18,7 @@
 #endif
 
 #include <string.h>
+#include <assert.h>
 
 // The applications interface towards the implementation in this file
 #include "jpf.h"
@@ -44,6 +45,7 @@ int jpf_create_sprite(char * src)
   }
   strcpy(sprites.arr[sprites.cnt].src, src);
   sprites.arr[sprites.cnt].inuse = 1;
+  assert(sprites.cnt < 100); // TODO...
   return sprites.cnt++;
 }
 
