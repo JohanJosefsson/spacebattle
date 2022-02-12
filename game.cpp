@@ -1,6 +1,8 @@
 
 #include "Game.h"
 #include "jpf.h"
+#include <assert.h>
+
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 20.f);
 
 Game::Game()
@@ -188,6 +190,7 @@ int jpf_create_sprite(char * src)
 	}
 	g_sprites.spritelist[g_sprites.cur]->sprite.setTexture(g_sprites.spritelist[g_sprites.cur]->texture);
 	
+	assert(g_sprites.cur < 100);
 	return g_sprites.cur++;
 }
 void jpf_release_sprite(int spid)
