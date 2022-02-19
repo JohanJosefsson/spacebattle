@@ -18,37 +18,51 @@ static void Spaceship_move(struct Spaceship * me);
 
 
 
+/* JSM Statemachine
 
-enum State {
-	top_s,
-		flying_s,
-				normal_s,
-					protected_s,
-					unprotected_s,
-				quarterbroken_s,
-				halfbroken_s,
-				threequarterbroken_s,
-		broken_s,
+name = Spaceship
+suffix = yes
+top ->flying
+  flying ->normal :h
+    normal ->unprotected :he
+      protected :he
+      unprotected :he
+    quarterbroken :he
+    halfbroken :he
+    threequarterbroken :he
+  broken :he
+
+*/
+
+struct Spaceship;
+
+enum SpaceshipState
+{
+top_s,
+  flying_s,
+    normal_s,
+      protected_s,
+      unprotected_s,
+    quarterbroken_s,
+    halfbroken_s,
+    threequarterbroken_s,
+  broken_s,
 };
 
-
 static const struct TopologyNode topology[] = {
-	// id, super, descend
-	{top_s, 0, flying_s},
-		{flying_s, top_s, normal_s},
-			{normal_s, flying_s, unprotected_s},
-				{protected_s, normal_s},
-				{unprotected_s, normal_s},
-			{quarterbroken_s, flying_s},
-			{halfbroken_s, flying_s},
-			{threequarterbroken_s, flying_s},
-		{broken_s, top_s}
+  // id, super, descend
+  {top_s, 0, flying_s},
+    {flying_s, top_s, normal_s},
+      {normal_s, flying_s, unprotected_s},
+        {protected_s, normal_s},
+        {unprotected_s, normal_s},
+      {quarterbroken_s, flying_s},
+      {halfbroken_s, flying_s},
+      {threequarterbroken_s, flying_s},
+    {broken_s, top_s}
 };
 
 // Fwd decl.
-//static int running_handler(struct Player * me, int ev);
-// static void running_on_entry(struct Player * me);
-static int top_handler(struct Spaceship * me, int ev);
 static int flying_handler(struct Spaceship * me, int ev);
 static int normal_handler(struct Spaceship * me, int ev);
 static void normal_on_entry(struct Spaceship * me);
@@ -65,24 +79,20 @@ static void threequarterbroken_on_entry(struct Spaceship * me);
 static int broken_handler(struct Spaceship * me, int ev);
 static void broken_on_entry(struct Spaceship * me);
 
-
-
-
 static struct Statefuncs state_funcs[] = {
-	// #, name, handler, entry, exit, init
-	//	{running, "running", running_handler, running_on_entry, running_on_exit},
-	{top_s, "top"},
-	{flying_s, "flying", flying_handler},
-	{normal_s, "normal", normal_handler, normal_on_entry},
-	{protected_s, "protected", protected_handler, protected_on_entry},
-	{unprotected_s, "unprotected", unprotected_handler, unprotected_on_entry},
-	{quarterbroken_s, "quarterbroken", quarterbroken_handler, quarterbroken_on_entry},
-	{halfbroken_s, "halfbroken", halfbroken_handler, halfbroken_on_entry},
-	{threequarterbroken_s, "threequarterbroken", threequarterbroken_handler, threequarterbroken_on_entry},
-	{broken_s, "broken", broken_handler, broken_on_entry},
+  // #, name, handler, entry, exit, init
+  {top_s, "top", 0,0,0,0,},
+  {flying_s, "flying", flying_handler, 0,0,0,},
+  {normal_s, "normal", normal_handler, normal_on_entry, 0,0,},
+  {protected_s, "protected", protected_handler, protected_on_entry, 0,0,},
+  {unprotected_s, "unprotected", unprotected_handler, unprotected_on_entry, 0,0,},
+  {quarterbroken_s, "quarterbroken", quarterbroken_handler, quarterbroken_on_entry, 0,0,},
+  {halfbroken_s, "halfbroken", halfbroken_handler, halfbroken_on_entry, 0,0,},
+  {threequarterbroken_s, "threequarterbroken", threequarterbroken_handler, threequarterbroken_on_entry, 0,0,},
+  {broken_s, "broken", broken_handler, broken_on_entry, 0,0,},
 };
 
-
+//.
 
 /* Utilities */
 static int sgn(int x)
