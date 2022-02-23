@@ -57,7 +57,7 @@ static void on_dispatch(void * receiver, int ev, void * data)
 
 void fx_init()
 {
-	g_fx.sub = jeq_subscribe(on_dispatch, &g_fx);
+	g_fx.sub = jeq_subscribe(on_dispatch, &g_fx);/// fix?
 	g_fx.spid_stone = jpf_create_sprite("stone.png");
 	g_fx.spid_bluestar = jpf_create_sprite("bluestar.png");
 	g_fx.spid_workshop = jpf_create_sprite("workshop.png");

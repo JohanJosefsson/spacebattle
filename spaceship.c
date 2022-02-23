@@ -8,6 +8,7 @@
 #include "jeq.h"
 #include "jsm.h"
 #include "squares.h"
+#include "timer.h"
 
 static void Spaceship_turn_left(struct Spaceship * me);
 static void Spaceship_turn_right(struct Spaceship * me);
@@ -22,7 +23,7 @@ static void Spaceship_move(struct Spaceship * me);
 
 name = Spaceship
 suffix = yes
-top ->flying
+top ->flying :h
   flying ->normal :h
     normal ->unprotected :he
       protected :he
@@ -63,6 +64,7 @@ static const struct TopologyNode topology[] = {
 };
 
 // Fwd decl.
+static int top_handler(struct Spaceship * me, int ev);
 static int flying_handler(struct Spaceship * me, int ev);
 static int normal_handler(struct Spaceship * me, int ev);
 static void normal_on_entry(struct Spaceship * me);
@@ -81,7 +83,7 @@ static void broken_on_entry(struct Spaceship * me);
 
 static struct Statefuncs state_funcs[] = {
   // #, name, handler, entry, exit, init
-  {top_s, "top", 0,0,0,0,},
+  {top_s, "top", top_handler, 0,0,0,},
   {flying_s, "flying", flying_handler, 0,0,0,},
   {normal_s, "normal", normal_handler, normal_on_entry, 0,0,},
   {protected_s, "protected", protected_handler, protected_on_entry, 0,0,},
@@ -145,6 +147,7 @@ struct Spaceship {
 	int cnt;
 	struct Laser {
 		int sub;
+		int prohibit;
 		float x;
 		float y;
 		float angle;
@@ -161,7 +164,15 @@ struct Spaceship {
 
 
 ///
-static int top_handler(struct Spaceship * me, int ev) { return 0; }
+static int top_handler(struct Spaceship * me, int ev) {
+	switch (ev) {
+	case EVT_LASER_PROHIBIT_TMO:
+		me->laser.prohibit = 0;
+		return 1;
+	}
+	return 0;
+}
+
 static int flying_handler(struct Spaceship * me, int ev)
 {
 	//printf("%s %d\n", __FUNCTION__, ev);
@@ -329,7 +340,7 @@ static int broken_handler(struct Spaceship * me, int ev)
 
 static void broken_on_entry(struct Spaceship * me)
 {
-	printf("%s sub=%d\n", __FUNCTION__, me->sub);
+	//printf("%s sub=%d\n", __FUNCTION__, me->sub);
 	me->vel_x = 0.0;
 	me->vel_y = 0.0;
 	me->cur_spid = me->spid_broken;
@@ -396,6 +407,8 @@ static int g_nextSqCoord;
 
 void Spaceship_init(struct Spaceship * me, jpfusr_t usr)
 {
+	struct Spaceship ss0 = { 0 };
+	*me = ss0;
 	struct StateChart sc0 = { 0 };
 	me->sc = sc0;
 	me->sc.topology_p = topology;
@@ -460,8 +473,12 @@ void Spaceship_deinit(struct Spaceship * me)
 	}
 }
 
+
+static int laser2_fire(int x, int y, float angle, int ssid);
+
 static void Spaceship_fire(struct Spaceship * me)
 {
+	/*
 	if (me->laser.tmo)return;
 	me->laser.tmo = 20;
 	me->laser.x = me->x;
@@ -469,6 +486,16 @@ static void Spaceship_fire(struct Spaceship * me)
 	me->laser.angle = me->angle;
 	me->laser.state = active;
 	me->laser.hidden = 0;
+
+	*/
+
+	//printf("try fire %d\n", me->laser.prohibit);
+	if (!me->laser.prohibit) {
+		me->laser.sub = laser2_fire(me->x, me->y, me->angle, me->sub);
+		me->laser.prohibit = 1;
+		timer_set(me->sub, EVT_LASER_PROHIBIT_TMO, 20);
+
+	}
 }
 
 static void Spaceship_turn_left(struct Spaceship * me)
@@ -524,6 +551,240 @@ static void Spaceship_move(struct Spaceship * me)
 	}
 }
 
+
+
+/* JSM Statemachine
+
+name = Laser2
+qualified=yes
+suffix = yes
+top ->swooshing :ix
+  swooshing :hex
+  fizzling :he
+
+*/
+
+struct Laser2;
+
+enum Laser2State
+{
+laser2_top_s,
+  laser2_swooshing_s,
+  laser2_fizzling_s,
+};
+
+static const struct TopologyNode laser2_topology[] = {
+  // id, super, descend
+  {laser2_top_s, 0, laser2_swooshing_s},
+    {laser2_swooshing_s, laser2_top_s},
+    {laser2_fizzling_s, laser2_top_s}
+};
+
+// Fwd decl.
+static void laser2_top_on_init(struct Laser2 * me);
+static void laser2_top_on_exit(struct Laser2 * me);
+static int laser2_swooshing_handler(struct Laser2 * me, int ev);
+static void laser2_swooshing_on_entry(struct Laser2 * me);
+static void laser2_swooshing_on_exit(struct Laser2 * me);
+static int laser2_fizzling_handler(struct Laser2 * me, int ev);
+static void laser2_fizzling_on_entry(struct Laser2 * me);
+
+static struct Statefuncs laser2_state_funcs[] = {
+  // #, name, handler, entry, exit, init
+  {laser2_top_s, "laser2_top", 0,0,laser2_top_on_exit, laser2_top_on_init},
+  {laser2_swooshing_s, "laser2_swooshing", laser2_swooshing_handler, laser2_swooshing_on_entry, laser2_swooshing_on_exit, 0,},
+  {laser2_fizzling_s, "laser2_fizzling", laser2_fizzling_handler, laser2_fizzling_on_entry, 0,0,},
+};
+
+//.
+
+struct Laser2 {
+	float x;
+	float y;
+	float angle;
+	int sub;
+	int ssid; // id of associated spaceship
+	struct StateChart sc;
+	void * evtData_p;
+	struct Swooshing
+	{
+		int tmh;
+	}swooshing;
+};
+
+
+
+static void laser2_on_dispatch(void * receiver, int ev, void * data)
+{
+	struct Laser2 * me = receiver;
+	me->evtData_p = data;
+	jsm_dispatch(&me->sc, me, ev);
+	me->evtData_p = 0;
+}
+
+
+static int laser2_fire(int x, int y, float angle, int ssid)
+{
+	// Create and initialize a laser
+	struct Laser2 * me = malloc(sizeof(struct Laser2));
+	struct Laser2 l2 = {0};
+	*me = l2;
+	me->x = x;
+	me->y = y;
+	me->angle = angle;
+	me->ssid = ssid;
+	struct StateChart sc0 = { laser2_topology, laser2_state_funcs };
+	me->sc = sc0;
+	me->sub = jeq_subscribe(laser2_on_dispatch, me);
+	jsm_init(&me->sc, me);
+	
+	return me->sub;
+}
+
+
+static void laser2_top_on_init(struct Laser2 * me)
+{
+	
+}
+
+static void laser2_top_on_exit(struct Laser2 * me)
+{
+	//me->sub = jeq_subscribe(laser2_on_dispatch, me);
+	jeq_unsub(me->sub);
+	free(me);
+}
+
+
+static int laser2_swooshing_handler(struct Laser2 * me, int ev) {
+	switch (ev) {
+	case EVT_TICK:
+		//printf("tick (%d) ", me->sub);
+
+		me->x += 15 * cos(me->angle * PI / 180.0);
+		me->y += 15 * sin(me->angle * PI / 180.0);
+		//if (me->x < 0 || me->x > MAX_X || me->y < 0 || me->y > MAX_Y) {
+		//	me->state = inactive;
+		//}
+		struct TreadData * p = malloc(sizeof(struct TreadData));
+		p->col_sig = COLSIG_LASER;
+		p->id = me->sub;
+		p->x = me->x;////
+		p->y = me->y;/////
+		jeq_sendto(EVT_TREAD, p, WORLD);
+
+		struct Draw * t = malloc(sizeof(struct Draw));
+		t->id = me->sub;
+		t->sprite = laser_sprite;
+		t->x = me->x;////
+		t->y = me->y;/////
+		t->angle = me->angle;
+		jeq_sendto(EVT_DRAW, t, DRAW_SUB);
+/*
+		me->swooshing.cnt++;
+		if(me->swooshing.cnt > 20)CHANGE(&(me->sc), laser2_fizzling_s);
+		*/
+		return 1;
+	case EVT_TMO:
+		CHANGE(&(me->sc), laser2_fizzling_s);
+		return 1;
+
+	case COLSIG_FIXED:
+		;
+		struct LeaveData * l = malloc(sizeof(struct LeaveData));
+		l->id = me->sub;
+		jeq_sendto(EVT_LEAVE, l, WORLD);
+
+		l = malloc(sizeof(struct LeaveData));
+		l->id = me->sub;
+		jeq_sendto(EVT_LEAVE, l, DRAW_SUB);
+		CHANGE(&(me->sc), TERMINAL);
+		return 1;
+	}
+	return 0;
+}
+
+
+static void laser2_swooshing_on_entry(struct Laser2 * me)
+{
+	me->swooshing.tmh = timer_set(me->sub, EVT_TMO, 10);
+}
+
+static void laser2_swooshing_on_exit(struct Laser2 * me)
+{
+	timer_cancel(me->swooshing.tmh);
+}
+
+
+static int laser2_fizzling_handler(struct Laser2 * me, int ev) {
+	switch (ev) {
+	case EVT_TMO:
+		;
+		struct LeaveData * p = malloc(sizeof(struct LeaveData));
+		p->id = me->sub;
+		jeq_sendto(EVT_LEAVE, p, WORLD);
+		
+		p = malloc(sizeof(struct LeaveData));
+		p->id = me->sub;
+		jeq_sendto(EVT_LEAVE, p, DRAW_SUB);
+		CHANGE(&(me->sc), TERMINAL);
+		return 1;
+	case EVT_TICK:
+		me->angle += 31;
+
+		struct Draw * t = malloc(sizeof(struct Draw));
+		t->id = me->sub;
+		t->sprite = explosion_sprite;
+		t->x = me->x;////
+		t->y = me->y;/////
+		t->angle = me->angle;
+		jeq_sendto(EVT_DRAW, t, DRAW_SUB);
+		return 1;
+
+
+	}
+	return 0;
+}
+
+static void laser2_fizzling_on_entry(struct Laser2 * me) {
+	/*
+	struct LeaveData * l = malloc(sizeof(struct LeaveData));
+	l->id = me->sub;
+	jeq_sendto(EVT_LEAVE, l, WORLD);
+	*/
+
+	struct TreadData * p = malloc(sizeof(struct TreadData));
+	p->col_sig = COLSIG_LASER;
+	p->id = me->sub;
+	p->x = me->x;////
+	p->y = me->y;/////
+	jeq_sendto(EVT_TREAD, p, WORLD);
+
+	struct Draw * t = malloc(sizeof(struct Draw));
+	t->id = me->sub;
+	t->sprite = explosion_sprite;
+	t->x = me->x;////
+	t->y = me->y;/////
+	t->angle = me->angle;
+	jeq_sendto(EVT_DRAW, t, DRAW_SUB);
+
+	me->swooshing.tmh = timer_set(me->sub, EVT_TMO, 6);//name
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Keyboard handling
+//
 void Spaceship_tick(struct Spaceship * me, jpfhandle_t h)//remove?
 {
 

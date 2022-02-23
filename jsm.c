@@ -1,5 +1,6 @@
 #include "jsm.h"
 #include <stdio.h>
+#include <assert.h>
 
 //enum State;
 
@@ -76,7 +77,7 @@ void jsm_dispatch(struct StateChart * sc, struct MeType * user, int evt)
 {
 	int stateFuncIdToCall;
 	int stateFuncRet;
-
+	assert(TERMINAL != sc->current_state);
 	//PRINTF("***\nHandle signal:  %d\n", evt);
 	//PRINTF("state before processing = %s\n", sc->state_funcs_p[sc->current_state].name);
 	sc->next_state = -1;
@@ -108,12 +109,17 @@ void jsm_dispatch(struct StateChart * sc, struct MeType * user, int evt)
 		s = sc->current_state;
 		//exit all hierarchical states
 
-		while (!isSuperStateOf(sc, s, tgt) || isSuperStateOf(sc, triggerstate, s)) {
+		while (!isSuperStateOf(sc, s, tgt) || isSuperStateOf(sc, triggerstate, s) ||
+			tgt == TERMINAL) {
 
 			// call state handler with exit signal
 			PRINTF("EXIT action of state: %s (%d)\n", getStateName(sc, s), s);
 			if (!(is_internal_trans && s == tgt)) {
 				if (sc->state_funcs_p[s].exithandler)sc->state_funcs_p[s].exithandler(user);
+			}
+			if (0 == s) {
+				sc->current_state = TERMINAL;
+				goto READY;
 			}
 			s = sc->topology_p[s].superstate;
 			sc->current_state = s;
@@ -125,6 +131,8 @@ void jsm_dispatch(struct StateChart * sc, struct MeType * user, int evt)
 			desctate = sc->topology_p[sc->current_state].descend_substate;
 		} while (desctate);
 	}
+READY:
+	;
 	//PRINTF("state after processing = %s\n", sc->state_funcs_p[sc->current_state].name);
 }
 

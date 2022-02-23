@@ -11,6 +11,9 @@
 #include "world.h"
 #include "squares.h"
 #include "fixed.h"
+#include "draw.h"
+#include "timer.h"
+
 #define MAX_USR (5)
 
 struct User {
@@ -44,6 +47,7 @@ void jpf_init()
 	jeq_init(NOF_SUBS);
   Sq_init();
   fx_init();
+  draw_init();
 
 
 
@@ -84,6 +88,7 @@ void jpf_on_remove_user(jpfusr_t usr)
 
 void jpf_on_tick(jpfhandle_t h)
 {
+	timer_tick();
 	for(int i = 0; i < MAX_USR; i++) {
 		if(0 != g_app.users[i].usr) {
 //			User_tick(&g_app.users[i], h);
@@ -105,6 +110,7 @@ void jpf_on_draw(jpfhandle_t h)
 		}
 	}
 	fx_draw(h);
+	draw_draw(h);
 }
 
 

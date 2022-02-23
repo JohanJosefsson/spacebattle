@@ -21,6 +21,10 @@ enum Event {
 	COLSIG_BLUESTAR,
 	COLSIG_WORKSHOP,
 	EVT_BLUESTAR_RST,
+	EVT_DRAW,
+	EVT_TIMER,
+	EVT_LASER_PROHIBIT_TMO,
+	EVT_TMO,
 
 };
 /*
@@ -53,11 +57,27 @@ struct LeaveData {
 	int id;
 };
 
+struct Draw {
+  int id;
+  int sprite;
+  float x;
+  float y;
+  float angle;
+};
+
 // These are the static queue subscribers. Those exist during the entire exeution
 enum Subs
 {
 	WORLD,
 	FIXED_SUB, // Special subscriber (id in world) for fixed things
+	DRAW_SUB,
 	NOF_SUBS, // used in queue initalization
+};
+
+
+enum Sprites {
+	laser_sprite,
+	explosion_sprite,
+	NOF_SPRITES,
 };
 

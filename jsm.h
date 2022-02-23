@@ -47,3 +47,6 @@ int jsm_is_in_state(struct StateChart * sc, int state);
 
 #define CHANGE(sc, nxt) \
 do{(sc)->next_state = nxt;}while(0)
+
+// Terminal pseudo state
+#define TERMINAL (-2)
