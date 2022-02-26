@@ -6,6 +6,7 @@
 
 static int isSuperStateOf(struct StateChart * sc, int possibleSuperState, int subState)
 {
+	if(TERMINAL == subState)return 0;
 	int i = subState;
 	while ( i != 0) {
 		i = sc->topology_p[i].superstate;

@@ -31,7 +31,7 @@ void draw_init()
 {
 	g_draw.sub = jeq_subscribe_res(DRAW_SUB, on_dispatch, &g_draw);
 	g_draw.spids[laser_sprite] = jpf_create_sprite("laser.png");
-	g_draw.spids[explosion_sprite] = jpf_create_sprite("EXPLOSION.png");
+	g_draw.spids[explosion_sprite] = jpf_create_sprite("explosion.png");
 
 
 
