@@ -111,7 +111,6 @@ static int absv(int x)
 
 
 //enum spaceshipstate { flying, broken };
-enum laserstate { active, inactive };
 struct Spaceship {
 	void * evtData_p;
     struct StateChart sc;
@@ -148,13 +147,6 @@ struct Spaceship {
 	struct Laser {
 		int sub;
 		int prohibit;
-		float x;
-		float y;
-		float angle;
-		int tmo;
-		enum laserstate state;
-		int hidden;
-		int spid;
 	} laser;
 };
 
@@ -362,46 +354,6 @@ static void on_dispatch(void * receiver, int ev, void * data)
 }
 
 
-static void on_dispatch_laser(void * receiver, int ev, void * data)
-{
-	struct Laser * me = receiver;
-	//printf("on_dispatch e=%lu u=%d sub=%d\n", ev , me->usr, me->sub);
-	struct CollisionData * cd = 0;
-
-	switch (ev) {
-	case EVT_TICK:
-		if (me->tmo)me->tmo--;
-		if (active == me->state) {
-			me->x += 15 * cos(me->angle * PI / 180.0);
-			me->y += 15 * sin(me->angle * PI / 180.0);
-			if (me->x < 0 || me->x > MAX_X || me->y < 0 || me->y > MAX_Y) {
-				me->state = inactive;
-			}
-			struct TreadData * p = malloc(sizeof(struct TreadData));
-			p->col_sig = me->state == active ? COLSIG_LASER : COLSIG_NOTHING;
-			p->id = me->sub;
-			p->x = me->x;////
-			p->y = me->y;/////
-			jeq_sendto(EVT_TREAD, p, WORLD);
-
-		}
-		break;
-
-	case COLSIG_FIXED:
-		if(active == me->state) {
-			struct TreadData * p = malloc(sizeof(struct TreadData));
-			p->col_sig = COLSIG_NOTHING;
-			p->id = me->sub;
-			p->x = me->x;////
-			p->y = me->y;/////
-			jeq_sendto(EVT_TREAD, p, WORLD);
-
-			me->state = inactive;
-		}
-		break;
-	}
-}
-
 
 static int g_nextSqCoord;
 
@@ -429,8 +381,6 @@ void Spaceship_init(struct Spaceship * me, jpfusr_t usr)
 	me->h = MAX_Y;
 	me->w = MAX_X;
 	me->inited = 1;
-	me->laser.tmo = 0;
-	me->laser.state = inactive;
 	me->cnt = 0;
 	me->health = 1.0;
 
@@ -442,9 +392,7 @@ void Spaceship_init(struct Spaceship * me, jpfusr_t usr)
 	me->spid_threequarterbroken = jpf_create_sprite("threequarterbroken.png");
 	me->cur_spid = -1;
 
-	me->laser.spid = jpf_create_sprite("laser.png");
 	me->sub = jeq_subscribe(on_dispatch, me);
-	me->laser.sub = jeq_subscribe(on_dispatch_laser, &me->laser);
 
 }
 
@@ -453,11 +401,9 @@ void Spaceship_deinit(struct Spaceship * me)
 	me->inited = 0;
 	jpf_release_sprite(me->spid_spaceship);
 	jpf_release_sprite(me->spid_broken);
-	jpf_release_sprite(me->laser.spid);
-	jpf_release_sprite(me->laser.spid);
 
 	jeq_unsub(me->sub);
-	jeq_unsub(me->laser.sub);
+//	jeq_unsub(me->laser.sub);
 
 
 
@@ -468,7 +414,7 @@ void Spaceship_deinit(struct Spaceship * me)
 	}
 	{
 		struct LeaveData * p = malloc(sizeof(struct LeaveData));
-		p->id = me->laser.sub;
+//		p->id = me->laser.sub;
 		jeq_sendto(EVT_LEAVE, p, WORLD);
 	}
 }
@@ -839,9 +785,6 @@ void Spaceship_tick(struct Spaceship * me, jpfhandle_t h)//remove?
 
 int Spaceship_draw(struct Spaceship * me, jpfhandle_t h)
 {
-	if (active == me->laser.state) {
-		jpf_draw_sprite(h, me->laser.spid, me->laser.x, me->laser.y, me->laser.angle);
-	}
 
 	//{ "Id":102, "x":80, "y":120 }
 	if (me->inited) {
