@@ -439,7 +439,7 @@ static void Spaceship_fire(struct Spaceship * me)
 	if (!me->laser.prohibit) {
 		me->laser.sub = laser2_fire(me->x, me->y, me->angle, me->sub);
 		me->laser.prohibit = 1;
-		timer_set(me->sub, EVT_LASER_PROHIBIT_TMO, 20);
+		timer_set(me->sub, EVT_LASER_PROHIBIT_TMO, 7);
 
 	}
 }
