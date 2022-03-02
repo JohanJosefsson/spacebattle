@@ -19,6 +19,8 @@ static void Spaceship_move(struct Spaceship * me);
 
 
 
+
+
 /* JSM Statemachine
 
 name = Spaceship
@@ -32,7 +34,6 @@ top ->flying :h
     halfbroken :he
     threequarterbroken :he
   broken :he
-
 */
 
 struct Spaceship;
@@ -83,15 +84,72 @@ static void broken_on_entry(struct Spaceship * me);
 
 static struct Statefuncs state_funcs[] = {
   // #, name, handler, entry, exit, init
-  {top_s, "top", top_handler, 0,0,0,},
-  {flying_s, "flying", flying_handler, 0,0,0,},
-  {normal_s, "normal", normal_handler, normal_on_entry, 0,0,},
-  {protected_s, "protected", protected_handler, protected_on_entry, 0,0,},
-  {unprotected_s, "unprotected", unprotected_handler, unprotected_on_entry, 0,0,},
-  {quarterbroken_s, "quarterbroken", quarterbroken_handler, quarterbroken_on_entry, 0,0,},
-  {halfbroken_s, "halfbroken", halfbroken_handler, halfbroken_on_entry, 0,0,},
-  {threequarterbroken_s, "threequarterbroken", threequarterbroken_handler, threequarterbroken_on_entry, 0,0,},
-  {broken_s, "broken", broken_handler, broken_on_entry, 0,0,},
+  {top_s, "top", (handlerfunc_t)top_handler, 0,0,0,},
+  {flying_s, "flying", (handlerfunc_t)flying_handler, 0,0,0,},
+  {normal_s, "normal", (handlerfunc_t)normal_handler, (onfunc_t)normal_on_entry, 0,0,},
+  {protected_s, "protected", (handlerfunc_t)protected_handler, (onfunc_t)protected_on_entry, 0,0,},
+  {unprotected_s, "unprotected", (handlerfunc_t)unprotected_handler, (onfunc_t)unprotected_on_entry, 0,0,},
+  {quarterbroken_s, "quarterbroken", (handlerfunc_t)quarterbroken_handler, (onfunc_t)quarterbroken_on_entry, 0,0,},
+  {halfbroken_s, "halfbroken", (handlerfunc_t)halfbroken_handler, (onfunc_t)halfbroken_on_entry, 0,0,},
+  {threequarterbroken_s, "threequarterbroken", (handlerfunc_t)threequarterbroken_handler, (onfunc_t)threequarterbroken_on_entry, 0,0,},
+  {broken_s, "broken", (handlerfunc_t)broken_handler, (onfunc_t)broken_on_entry, 0,0,},
+};
+
+//.
+
+/* JSM Statemachine
+# Orthogonal region
+name = Bubble
+qualified=yes
+suffix=yes
+top ->passive :i
+  passive :he
+  active ->full :e
+    full :h
+    spinning :he
+    flashing :h
+*/
+
+struct Bubble;
+
+enum BubbleState
+{
+bubble_top_s,
+  bubble_passive_s,
+  bubble_active_s,
+    bubble_full_s,
+    bubble_spinning_s,
+    bubble_flashing_s,
+};
+
+static const struct TopologyNode bubble_topology[] = {
+  // id, super, descend
+  {bubble_top_s, 0, bubble_passive_s},
+    {bubble_passive_s, bubble_top_s},
+    {bubble_active_s, bubble_top_s, bubble_full_s},
+      {bubble_full_s, bubble_active_s},
+      {bubble_spinning_s, bubble_active_s},
+      {bubble_flashing_s, bubble_active_s}
+};
+
+// Fwd decl.
+static void bubble_top_on_init(struct Bubble * me);
+static int bubble_passive_handler(struct Bubble * me, int ev);
+static void bubble_passive_on_entry(struct Bubble * me);
+static void bubble_active_on_entry(struct Bubble * me);
+static int bubble_full_handler(struct Bubble * me, int ev);
+static int bubble_spinning_handler(struct Bubble * me, int ev);
+static void bubble_spinning_on_entry(struct Bubble * me);
+static int bubble_flashing_handler(struct Bubble * me, int ev);
+
+static struct Statefuncs bubble_state_funcs[] = {
+  // #, name, handler, entry, exit, init
+  {bubble_top_s, "bubble_top", 0,0,0,(onfunc_t)bubble_top_on_init},
+  {bubble_passive_s, "bubble_passive", (handlerfunc_t)bubble_passive_handler, (onfunc_t)bubble_passive_on_entry, 0,0,},
+  {bubble_active_s, "bubble_active", 0,(onfunc_t)bubble_active_on_entry, 0,0,},
+  {bubble_full_s, "bubble_full", (handlerfunc_t)bubble_full_handler, 0,0,0,},
+  {bubble_spinning_s, "bubble_spinning", (handlerfunc_t)bubble_spinning_handler, (onfunc_t)bubble_spinning_on_entry, 0,0,},
+  {bubble_flashing_s, "bubble_flashing", (handlerfunc_t)bubble_flashing_handler, 0,0,0,},
 };
 
 //.
@@ -137,9 +195,11 @@ struct Spaceship {
 	int spid_broken;
 	int spid_halfbroken;
 	int spid_protected;
+	//int spid_bubble;
 	int spid_quarterbroken;
 	int spid_threequarterbroken;
 	int	cur_spid;
+	//int cur_spid2;
 
 
 
@@ -148,7 +208,71 @@ struct Spaceship {
 		int sub;
 		int prohibit;
 	} laser;
+	struct Bubble {
+		struct StateChart sc;
+		int * sub;
+		int cur_spid;
+		int spid;
+		float angle;
+	}bubble;
+
 };
+
+
+////
+
+
+static void bubble_top_on_init(struct Bubble * me) {
+	me->spid = jpf_create_sprite("bubble.png");
+	me->cur_spid = -1;
+};
+static int bubble_passive_handler(struct Bubble * me, int ev) {
+	switch (ev)
+	{
+	case COLSIG_PINKSTAR:
+		CHANGE(&(me->sc), bubble_active_s);
+		return 1;
+	}
+	return 0;
+}
+static void bubble_passive_on_entry(struct Bubble * me)
+{
+	me->cur_spid = -1;
+};
+static void bubble_active_on_entry(struct Bubble * me)
+{
+	me->cur_spid = me->spid;
+};
+static int bubble_full_handler(struct Bubble * me, int ev)
+{
+	switch(ev)
+	{
+	case EVT_PINKSTAR_RST:
+		CHANGE(&(me->sc), bubble_spinning_s);
+		return 1;
+	}
+	return 0;
+};
+static int bubble_spinning_handler(struct Bubble * me, int ev)
+{
+	switch (ev)
+	{
+	case EVT_TICK:
+		me->angle += 5;
+		return 1;
+	case EVT_TMO:
+		CHANGE(&(me->sc), bubble_passive_s);
+		return 1;
+	}
+	return 0;
+};
+static void bubble_spinning_on_entry(struct Bubble * me)
+{
+	timer_set(*me->sub, EVT_TMO, 30);
+}
+static int bubble_flashing_handler(struct Bubble * me, int ev) { return 0; };
+
+
 
 
 
@@ -219,7 +343,8 @@ static int normal_handler(struct Spaceship * me, int ev) {
 	switch (ev) {
 	case COLSIG_LASER:
 		cd = data;
-		if (cd->id != me->laser.sub) {
+		cd = data;
+		if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
 			me->cnt++;
 			if (me->cnt > 0)CHANGE(&(me->sc), quarterbroken_s);
 		}
@@ -245,6 +370,10 @@ static int protected_handler(struct Spaceship * me, int ev) {
 }
 static void protected_on_entry(struct Spaceship * me) {
 	me->cur_spid = me->spid_protected;
+	//me->cur_spid2 = me->spid_bubble;
+}
+static void protected_on_exit(struct Spaceship * me) {
+	//me->cur_spid2 = -1;
 }
 static int unprotected_handler(struct Spaceship * me, int ev) { return 0; }
 static void unprotected_on_entry(struct Spaceship * me) {
@@ -256,7 +385,7 @@ static int quarterbroken_handler(struct Spaceship * me, int ev) {
 	switch (ev) {
 	case COLSIG_LASER:
 		cd = data;
-		if (cd->id != me->laser.sub) {
+		if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
 			me->cnt++;
 			if(me->cnt > 5)CHANGE(&(me->sc), halfbroken_s);
 		}
@@ -275,7 +404,7 @@ static int halfbroken_handler(struct Spaceship * me, int ev) {
 	switch (ev) {
 	case COLSIG_LASER:
 		cd = data;
-		if (cd->id != me->laser.sub) {
+		if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
 			me->cnt++;
 			if (me->cnt > 7)CHANGE(&(me->sc), threequarterbroken_s);
 		}
@@ -296,7 +425,7 @@ static int threequarterbroken_handler(struct Spaceship * me, int ev) {
 		return 1;
 	case COLSIG_LASER:
 		cd = data;
-		if (cd->id != me->laser.sub) {
+		if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
 			me->cnt++;
 			if (me->cnt > 3)CHANGE(&(me->sc), broken_s);
 		}
@@ -348,6 +477,11 @@ static void broken_on_entry(struct Spaceship * me)
 static void on_dispatch(void * receiver, int ev, void * data)
 {
 	struct Spaceship * me = receiver;
+
+	// First the orthogonal region:
+	// (evtData not used in bubble)
+	jsm_dispatch(&me->bubble.sc, &me->bubble, ev);
+
 	me->evtData_p = data;
 	jsm_dispatch(&me->sc, me, ev);
 	me->evtData_p = 0;
@@ -388,11 +522,21 @@ void Spaceship_init(struct Spaceship * me, jpfusr_t usr)
 	me->spid_broken = jpf_create_sprite("broken.png");
 	me->spid_halfbroken = jpf_create_sprite("halfbroken.png");
 	me->spid_protected = jpf_create_sprite("protected.png");
+	//me->spid_bubble = jpf_create_sprite("bubble.png");
 	me->spid_quarterbroken = jpf_create_sprite("quarterbroken.png");
 	me->spid_threequarterbroken = jpf_create_sprite("threequarterbroken.png");
 	me->cur_spid = -1;
+	//me->cur_spid2 = -1;
 
 	me->sub = jeq_subscribe(on_dispatch, me);
+
+	// Orthogonal state: bubble
+	me->bubble.sub = &me->sub;
+	me->bubble.sc.state_funcs_p = bubble_state_funcs;
+	me->bubble.sc.topology_p = bubble_topology;
+
+	jsm_init(&me->sc, me);
+	jsm_init(&me->bubble.sc, &me->bubble);
 
 }
 
@@ -498,7 +642,6 @@ static void Spaceship_move(struct Spaceship * me)
 }
 
 
-
 /* JSM Statemachine
 
 name = Laser2
@@ -537,9 +680,9 @@ static void laser2_fizzling_on_entry(struct Laser2 * me);
 
 static struct Statefuncs laser2_state_funcs[] = {
   // #, name, handler, entry, exit, init
-  {laser2_top_s, "laser2_top", 0,0,laser2_top_on_exit, laser2_top_on_init},
-  {laser2_swooshing_s, "laser2_swooshing", laser2_swooshing_handler, laser2_swooshing_on_entry, laser2_swooshing_on_exit, 0,},
-  {laser2_fizzling_s, "laser2_fizzling", laser2_fizzling_handler, laser2_fizzling_on_entry, 0,0,},
+  {laser2_top_s, "laser2_top", 0,0,(onfunc_t)laser2_top_on_exit, (onfunc_t)laser2_top_on_init},
+  {laser2_swooshing_s, "laser2_swooshing", (handlerfunc_t)laser2_swooshing_handler, (onfunc_t)laser2_swooshing_on_entry, (onfunc_t)laser2_swooshing_on_exit, 0,},
+  {laser2_fizzling_s, "laser2_fizzling", (handlerfunc_t)laser2_fizzling_handler, (onfunc_t)laser2_fizzling_on_entry, 0,0,},
 };
 
 //.
@@ -790,6 +933,7 @@ int Spaceship_draw(struct Spaceship * me, jpfhandle_t h)
 	if (me->inited) {
 
 		jpf_draw_sprite(h, me->cur_spid, me->x, me->y, me->angle);
+		if(me->bubble.cur_spid != -1)jpf_draw_sprite(h, me->bubble.cur_spid, me->x, me->y, me->angle + me->bubble.angle);
 	}
 	return me->inited;
 }
@@ -809,7 +953,6 @@ struct Spaceship *  new_Spaceship(jpfusr_t usr)
 
 	struct Spaceship * me = malloc(sizeof(struct Spaceship));
 	Spaceship_init(me, usr);
-	jsm_init(&me->sc, me);
 	return me;
 }
 

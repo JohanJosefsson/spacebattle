@@ -16,7 +16,7 @@ static const char pattern[] =
 " V             " //1
 "   O        V  " //2
 "    O  *       " //3
-"  V           O" //4
+"  V         + O" //4
 "       O      O" //5
 "O      O  V    " //6
 "  V        X   " //7
@@ -41,7 +41,7 @@ static const char pattern[] =
 
 struct List { int n; int iterator; struct SqCoord coord[NSQW*NSQH]; };
 
-static char char_to_index_map[] = { 'V', 'O', '*', 'X' };
+static char char_to_index_map[] = { 'V', 'O', '*', 'X', '+' };
 
 struct List list_of_lists[sizeof(char_to_index_map) / sizeof(char)];
 
