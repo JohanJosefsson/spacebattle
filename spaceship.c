@@ -332,6 +332,15 @@ static int flying_handler(struct Spaceship * me, int ev)
 			CHANGE(&(me->sc), flying_s);
 		}
 		return 1;
+	case COLSIG_LASER:
+		cd = data;
+		if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
+			me->cnt++;
+			//if (me->cnt > 5)CHANGE(&(me->sc), halfbroken_s);
+			// TODO jeq_send_now() does not work here
+			jeq_sendto(EVT_CNT_UPDATED, 0, me->sub);
+		}
+		return 1;
 
 	}
 	return 0;
@@ -341,13 +350,8 @@ static int normal_handler(struct Spaceship * me, int ev) {
 	struct CollisionData * cd = 0;
 	void * data = me->evtData_p;
 	switch (ev) {
-	case COLSIG_LASER:
-		cd = data;
-		cd = data;
-		if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
-			me->cnt++;
-			if (me->cnt > 0)CHANGE(&(me->sc), quarterbroken_s);
-		}
+	case EVT_CNT_UPDATED:
+		if (me->cnt > 0)CHANGE(&(me->sc), quarterbroken_s);
 		return 1;
 	}
 	return 0;
@@ -383,12 +387,8 @@ static int quarterbroken_handler(struct Spaceship * me, int ev) {
 	struct CollisionData * cd = 0;
 	void * data = me->evtData_p;
 	switch (ev) {
-	case COLSIG_LASER:
-		cd = data;
-		if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
-			me->cnt++;
-			if(me->cnt > 5)CHANGE(&(me->sc), halfbroken_s);
-		}
+	case EVT_CNT_UPDATED:
+		if(me->cnt > 5)CHANGE(&(me->sc), halfbroken_s);
 		return 1;
 	}
 	return 0;
@@ -402,12 +402,8 @@ static int halfbroken_handler(struct Spaceship * me, int ev) {
 	struct CollisionData * cd = 0;
 	void * data = me->evtData_p;
 	switch (ev) {
-	case COLSIG_LASER:
-		cd = data;
-		if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
-			me->cnt++;
-			if (me->cnt > 7)CHANGE(&(me->sc), threequarterbroken_s);
-		}
+	case EVT_CNT_UPDATED:
+		if (me->cnt > 7)CHANGE(&(me->sc), threequarterbroken_s);
 		return 1;
 	}
 	return 0;
@@ -423,12 +419,8 @@ static int threequarterbroken_handler(struct Spaceship * me, int ev) {
 	switch (ev) {
 	case EVT_A:
 		return 1;
-	case COLSIG_LASER:
-		cd = data;
-		if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
-			me->cnt++;
-			if (me->cnt > 3)CHANGE(&(me->sc), broken_s);
-		}
+	case EVT_CNT_UPDATED:
+		if (me->cnt > 3)CHANGE(&(me->sc), broken_s);
 		return 1;
 	}
 	return 0;

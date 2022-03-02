@@ -27,6 +27,7 @@ enum Event {
 	EVT_TIMER,
 	EVT_LASER_PROHIBIT_TMO,
 	EVT_TMO,
+	EVT_CNT_UPDATED,
 
 };
 /*

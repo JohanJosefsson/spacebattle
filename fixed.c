@@ -45,7 +45,7 @@ static void on_dispatch(void * receiver, int ev, void * data)
 		// Pinkstar
 		g_fx.pinkstar.rot += 2.2;
 		g_fx.pinkstar.cnt++;
-		if (g_fx.pinkstar.cnt > 100)
+		if (g_fx.pinkstar.cnt > 350)
 		{
 			g_fx.pinkstar.cnt = 0;
 			jeq_broadcast(EVT_PINKSTAR_RST, 0);
