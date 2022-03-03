@@ -30,6 +30,7 @@ enum Event {
 	EVT_LASER_PROHIBIT_TMO,
 	EVT_TMO,
 	EVT_CNT_UPDATED,
+	EVT_TERMINATE,
 
 };
 struct TreadData {

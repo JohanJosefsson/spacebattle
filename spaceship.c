@@ -102,7 +102,7 @@ static struct Statefuncs state_funcs[] = {
 name = Bubble
 qualified=yes
 suffix=yes
-top ->passive :i
+top ->passive :hxi
   passive :he
   active ->full :e
     full :h
@@ -134,6 +134,8 @@ static const struct TopologyNode bubble_topology[] = {
 
 // Fwd decl.
 static void bubble_top_on_init(struct Bubble * me);
+static int bubble_top_handler(struct Bubble * me, int ev);
+static void bubble_top_on_exit(struct Bubble * me);
 static int bubble_passive_handler(struct Bubble * me, int ev);
 static void bubble_passive_on_entry(struct Bubble * me);
 static void bubble_active_on_entry(struct Bubble * me);
@@ -144,7 +146,7 @@ static int bubble_flashing_handler(struct Bubble * me, int ev);
 
 static struct Statefuncs bubble_state_funcs[] = {
   // #, name, handler, entry, exit, init
-  {bubble_top_s, "bubble_top", 0,0,0,(onfunc_t)bubble_top_on_init},
+  {bubble_top_s, "bubble_top", (handlerfunc_t)bubble_top_handler, 0,(onfunc_t)bubble_top_on_exit, (onfunc_t)bubble_top_on_init},
   {bubble_passive_s, "bubble_passive", (handlerfunc_t)bubble_passive_handler, (onfunc_t)bubble_passive_on_entry, 0,0,},
   {bubble_active_s, "bubble_active", 0,(onfunc_t)bubble_active_on_entry, 0,0,},
   {bubble_full_s, "bubble_full", (handlerfunc_t)bubble_full_handler, 0,0,0,},
@@ -221,11 +223,24 @@ struct Spaceship {
 
 ////
 
-
 static void bubble_top_on_init(struct Bubble * me) {
 	me->spid = jpf_create_sprite("bubble.png");
 	me->cur_spid = -1;
 };
+static int bubble_top_handler(struct Bubble * me, int ev)
+{
+	switch (ev)
+	{
+	case EVT_TERMINATE:
+		CHANGE(&(me->sc), TERMINAL);
+		return 1;
+	}
+	return 0;
+}
+static void bubble_top_on_exit(struct Bubble * me)
+{
+	jpf_release_sprite(me->spid);
+}
 static int bubble_passive_handler(struct Bubble * me, int ev) {
 	switch (ev)
 	{
@@ -534,6 +549,8 @@ void Spaceship_init(struct Spaceship * me, jpfusr_t usr)
 
 void Spaceship_deinit(struct Spaceship * me)
 {
+	jsm_dispatch(&me->bubble.sc, &me->bubble, EVT_TERMINATE);
+
 	me->inited = 0;
 	jpf_release_sprite(me->spid_spaceship);
 	jpf_release_sprite(me->spid_broken);
