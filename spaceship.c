@@ -786,6 +786,13 @@ static int laser2_swooshing_handler(struct Laser2 * me, int ev) {
 		CHANGE(&(me->sc), laser2_fizzling_s);
 		return 1;
 
+	case COLSIG_PLAYER:
+		;
+		struct CollisionData * cd = (struct CollisionData *) me->evtData_p;
+		if(cd->id != me->ssid)//JJ
+		  CHANGE(&(me->sc), laser2_fizzling_s);
+		return 1;
+
 	case COLSIG_FIXED:
 		;
 		struct LeaveData * l = malloc(sizeof(struct LeaveData));
