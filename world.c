@@ -1,4 +1,4 @@
-#include "spacebattle.h"
+#include "app.h"
 #include "jeq.h"
 #include "world.h"
 

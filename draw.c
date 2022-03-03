@@ -1,5 +1,5 @@
 
-#include "spacebattle.h"
+#include "app.h"
 #include "draw.h"
 
 #define N (30)  // cf. NSUB

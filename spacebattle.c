@@ -1,6 +1,6 @@
 #include "jpf.h"
 #include "spaceship.h"
-#include "spacebattle.h"
+#include "app.h"
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>

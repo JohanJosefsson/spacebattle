@@ -1,5 +1,5 @@
 
-#include "spacebattle.h"
+#include "app.h"
 #include "squares.h"
 
 

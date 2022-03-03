@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "spaceship.h"
-#include "spacebattle.h"
+#include "app.h"
 #include "jeq.h"
 #include "jsm.h"
 #include "squares.h"

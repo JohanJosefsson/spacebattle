@@ -1,3 +1,6 @@
+
+// Global definitions and data structures
+
 #include "jpf.h"
 
 enum Event {
@@ -10,7 +13,6 @@ enum Event {
 
 	EVT_TREAD,
 	EVT_TREAD_DENIED,
-//	EVT_COLLISION,
 	EVT_LEAVE,
 	EVT_ADD_FIXED,
 	COLSIG_PLAYER,
@@ -30,14 +32,6 @@ enum Event {
 	EVT_CNT_UPDATED,
 
 };
-/*
-enum CollisionSignature {
-	COLSIG_PLAYER,
-	COLSIG_FIXED,
-	COLSIG_LASER,
-	COLSIG_NOTHING,
-};
-*/
 struct TreadData {
 	int id;
 	int x;
@@ -50,9 +44,6 @@ struct TreadRefuse {
 	int y;
 };
 struct CollisionData {
-	//int x;
-	//int y;
-//	enum CollisionSignature col_sig;
 	int id;
 };
 
