@@ -338,7 +338,7 @@ static int flying_handler(struct Spaceship * me, int ev)
 			me->cnt++;
 			//if (me->cnt > 5)CHANGE(&(me->sc), halfbroken_s);
 			// TODO jeq_send_now() does not work here
-			jeq_sendto(EVT_CNT_UPDATED, 0, me->sub);
+			jeq_send_now(EVT_CNT_UPDATED, 0, me->sub);
 		}
 		return 1;
 

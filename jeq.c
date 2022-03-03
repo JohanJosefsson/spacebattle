@@ -108,6 +108,7 @@ int jeq_dispatch(void)
 	if (g_evq.head != g_evq.tail) {
 		/* dispatch from the head */
 		const int h = g_evq.head;
+		g_evq.head = (g_evq.head + 1) % QS;
 		if (BC == g_evq.q[h].dest) {
 			for (int i = 0; i < NSUBS/*g_sublist.nextindex*/; i++) {
 				if (g_sublist.subr[i].alive) {
@@ -121,11 +122,8 @@ int jeq_dispatch(void)
 			}
 		}
 		if(g_evq.q[h].data)free(g_evq.q[h].data);
-
-		g_evq.head = (g_evq.head + 1) % QS;
 		return 0;
 	} else {
-		
 		return 1;
 	}
 
