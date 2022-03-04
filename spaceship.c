@@ -803,8 +803,8 @@ static int laser2_swooshing_handler(struct Laser2 * me, int ev) {
 	case COLSIG_PLAYER:
 		;
 		struct CollisionData * cd = (struct CollisionData *) me->evtData_p;
-		if(cd->id != me->ssid)//JJ
-		  CHANGE(&(me->sc), laser2_fizzling_s);
+		if(cd->id != me->ssid)
+		  CHANGE(&(me->sc), laser2_hitting_s);
 		return 1;
 
 	case COLSIG_FIXED:
@@ -831,7 +831,7 @@ static void laser2_swooshing_on_exit(struct Laser2 * me)
 {
 	timer_cancel(me->swooshing.tmh);
 }
-//jj
+
 static int laser2_hitting_handler(struct Laser2 * me, int ev)
 {
 	switch (ev)
@@ -839,7 +839,9 @@ static int laser2_hitting_handler(struct Laser2 * me, int ev)
 	case EVT_UPDATE:
 		;
 		float dist2 = (me->swooshing.hit_x - me->x)*(me->swooshing.hit_x - me->x) + (me->swooshing.hit_y - me->y)*(me->swooshing.hit_y - me->y);
-		if (dist2 > 32*32) {
+		if (dist2 >= 16) { // This is strange, should be 16*16 but...
+			//printf("%f %f %f : ", (me->swooshing.hit_x - me->x), (me->swooshing.hit_y - me->y), dist2);
+			//printf("%f %f %f %f\n",me->swooshing.hit_x, me->x, me->swooshing.hit_y, me->y);
 			CHANGE(&(me->sc), laser2_fizzling_s);
 		}
 		return 1;
