@@ -657,7 +657,9 @@ name = Laser2
 qualified=yes
 suffix = yes
 top ->swooshing :ix
-  swooshing :hex
+  swooshing ->regular_swosh :hex
+    regular_swosh
+    hitting :he
   fizzling :he
 
 */
@@ -668,13 +670,17 @@ enum Laser2State
 {
 laser2_top_s,
   laser2_swooshing_s,
+    laser2_regular_swosh_s,
+    laser2_hitting_s,
   laser2_fizzling_s,
 };
 
 static const struct TopologyNode laser2_topology[] = {
   // id, super, descend
   {laser2_top_s, 0, laser2_swooshing_s},
-    {laser2_swooshing_s, laser2_top_s},
+    {laser2_swooshing_s, laser2_top_s, laser2_regular_swosh_s},
+      {laser2_regular_swosh_s, laser2_swooshing_s},
+      {laser2_hitting_s, laser2_swooshing_s},
     {laser2_fizzling_s, laser2_top_s}
 };
 
@@ -684,6 +690,8 @@ static void laser2_top_on_exit(struct Laser2 * me);
 static int laser2_swooshing_handler(struct Laser2 * me, int ev);
 static void laser2_swooshing_on_entry(struct Laser2 * me);
 static void laser2_swooshing_on_exit(struct Laser2 * me);
+static int laser2_hitting_handler(struct Laser2 * me, int ev);
+static void laser2_hitting_on_entry(struct Laser2 * me);
 static int laser2_fizzling_handler(struct Laser2 * me, int ev);
 static void laser2_fizzling_on_entry(struct Laser2 * me);
 
@@ -691,6 +699,8 @@ static struct Statefuncs laser2_state_funcs[] = {
   // #, name, handler, entry, exit, init
   {laser2_top_s, "laser2_top", 0,0,(onfunc_t)laser2_top_on_exit, (onfunc_t)laser2_top_on_init},
   {laser2_swooshing_s, "laser2_swooshing", (handlerfunc_t)laser2_swooshing_handler, (onfunc_t)laser2_swooshing_on_entry, (onfunc_t)laser2_swooshing_on_exit, 0,},
+  {laser2_regular_swosh_s, "laser2_regular_swosh", 0,0,0,0,},
+  {laser2_hitting_s, "laser2_hitting", (handlerfunc_t)laser2_hitting_handler, (onfunc_t)laser2_hitting_on_entry, 0,0,},
   {laser2_fizzling_s, "laser2_fizzling", (handlerfunc_t)laser2_fizzling_handler, (onfunc_t)laser2_fizzling_on_entry, 0,0,},
 };
 
@@ -707,6 +717,8 @@ struct Laser2 {
 	struct Swooshing
 	{
 		int tmh;
+		float hit_x;
+		float hit_y;
 	}swooshing;
 };
 
@@ -777,6 +789,8 @@ static int laser2_swooshing_handler(struct Laser2 * me, int ev) {
 		t->y = me->y;/////
 		t->angle = me->angle;
 		jeq_sendto(EVT_DRAW, t, DRAW_SUB);
+
+		jeq_send_now(EVT_UPDATE, 0, me->sub);
 /*
 		me->swooshing.cnt++;
 		if(me->swooshing.cnt > 20)CHANGE(&(me->sc), laser2_fizzling_s);
@@ -808,7 +822,6 @@ static int laser2_swooshing_handler(struct Laser2 * me, int ev) {
 	return 0;
 }
 
-
 static void laser2_swooshing_on_entry(struct Laser2 * me)
 {
 	me->swooshing.tmh = timer_set(me->sub, EVT_TMO, 10);
@@ -818,7 +831,27 @@ static void laser2_swooshing_on_exit(struct Laser2 * me)
 {
 	timer_cancel(me->swooshing.tmh);
 }
+//jj
+static int laser2_hitting_handler(struct Laser2 * me, int ev)
+{
+	switch (ev)
+	{
+	case EVT_UPDATE:
+		;
+		float dist2 = (me->swooshing.hit_x - me->x)*(me->swooshing.hit_x - me->x) + (me->swooshing.hit_y - me->y)*(me->swooshing.hit_y - me->y);
+		if (dist2 > 32*32) {
+			CHANGE(&(me->sc), laser2_fizzling_s);
+		}
+		return 1;
+	}
+	return 0;
+}
 
+static void laser2_hitting_on_entry(struct Laser2 * me)
+{
+	me->swooshing.hit_x = me->x;
+	me->swooshing.hit_y = me->y;
+}
 
 static int laser2_fizzling_handler(struct Laser2 * me, int ev) {
 	switch (ev) {

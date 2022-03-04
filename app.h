@@ -31,6 +31,7 @@ enum Event {
 	EVT_TMO,
 	EVT_CNT_UPDATED,
 	EVT_TERMINATE,
+	EVT_UPDATE,
 
 };
 struct TreadData {
