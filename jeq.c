@@ -9,7 +9,7 @@
 struct GEvQ {
 	int head;
 	int tail;
-	struct{
+	struct Qelem{
 		int evid;
 		void * data;
 		int dest;
@@ -109,19 +109,20 @@ int jeq_dispatch(void)
 		/* dispatch from the head */
 		const int h = g_evq.head;
 		g_evq.head = (g_evq.head + 1) % QS;
-		if (BC == g_evq.q[h].dest) {
+		struct Qelem qe = g_evq.q[h];
+		if (BC == qe.dest) {
 			for (int i = 0; i < NSUBS/*g_sublist.nextindex*/; i++) {
 				if (g_sublist.subr[i].alive) {
-					g_sublist.subr[i].dispatch(g_sublist.subr[i].receiver, g_evq.q[h].evid, g_evq.q[h].data);
+					g_sublist.subr[i].dispatch(g_sublist.subr[i].receiver, qe.evid, qe.data);
 				}
 			}
 		}
 		else {
-			if (g_sublist.subr[g_evq.q[h].dest].alive) {
-				g_sublist.subr[g_evq.q[h].dest].dispatch(g_sublist.subr[g_evq.q[h].dest].receiver, g_evq.q[h].evid, g_evq.q[h].data);
+			if (g_sublist.subr[qe.dest].alive) {
+				g_sublist.subr[qe.dest].dispatch(g_sublist.subr[qe.dest].receiver, qe.evid, qe.data);
 			}
 		}
-		if(g_evq.q[h].data)free(g_evq.q[h].data);
+		if(qe.data)free(qe.data);
 		return 0;
 	} else {
 		return 1;
