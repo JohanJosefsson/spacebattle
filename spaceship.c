@@ -349,7 +349,8 @@ static int flying_handler(struct Spaceship * me, int ev)
 		return 1;
 	case COLSIG_LASER:
 		cd = data;
-		if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
+		//if (cd->id != me->laser.sub && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
+		if (!me->laser.prohibit && !jsm_is_in_state(&me->bubble.sc, bubble_active_s)) {
 			me->cnt++;
 			//if (me->cnt > 5)CHANGE(&(me->sc), halfbroken_s);
 			// TODO jeq_send_now() does not work here
