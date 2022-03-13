@@ -473,6 +473,9 @@ static void broken_on_entry(struct Spaceship * me)
 	me->vel_x = 0.0;
 	me->vel_y = 0.0;
 	me->cur_spid = me->spid_broken;
+	struct LeaveData * p = malloc(sizeof(struct LeaveData));
+	p->id = me->sub;
+	jeq_sendto(EVT_LEAVE, p, WORLD);
 }
 
 
@@ -560,12 +563,12 @@ void Spaceship_deinit(struct Spaceship * me)
 //	jeq_unsub(me->laser.sub);
 
 
-
+	/*
 	{
 		struct LeaveData * p = malloc(sizeof(struct LeaveData));
 		p->id = me->sub;
 		jeq_sendto(EVT_LEAVE, p, WORLD);
-	}
+	}*/
 	{
 		struct LeaveData * p = malloc(sizeof(struct LeaveData));
 //		p->id = me->laser.sub;
