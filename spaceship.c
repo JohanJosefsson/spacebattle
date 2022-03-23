@@ -563,12 +563,12 @@ void Spaceship_deinit(struct Spaceship * me)
 //	jeq_unsub(me->laser.sub);
 
 
-	/*
+	// It should be ok to leave several times (after broken)
 	{
 		struct LeaveData * p = malloc(sizeof(struct LeaveData));
 		p->id = me->sub;
 		jeq_sendto(EVT_LEAVE, p, WORLD);
-	}*/
+	}
 	{
 		struct LeaveData * p = malloc(sizeof(struct LeaveData));
 //		p->id = me->laser.sub;
