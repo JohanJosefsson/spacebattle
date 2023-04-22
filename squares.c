@@ -6,21 +6,28 @@
 
 // 480 x 270 pixel
 // 15 x 8 squares
-#define NSQW (15)
-#define NSQH (9)
+
+// 384 x 384 pixel
+// 12 x 12 squares
+#define NSQW (12)
+#define NSQH (12)
 #if 1
 static const char pattern[] =
 /*
 |012345678901234|       */
-"               " //0
-" V             " //1
-"   O        V  " //2
-"    O  *       " //3
-"  V         + O" //4
-"       O      O" //5
-"O      O  V    " //6
-"  V        X   " //7
-"      OO       " //8
+"            " //0
+"  V         " //1
+"  O       V " //2
+"   O *      " //3
+" V     +   O" //4
+"     O     O" //5
+"     O  V   " //6
+" V      X   " //7
+"    OO      " //8
+"            " //9
+"            " //10
+"    OO      " //11
+"    OO      " //12
 ;
 #else
 static const char pattern[] =

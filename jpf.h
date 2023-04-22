@@ -25,8 +25,8 @@ extern "C" {
 #define PI (3.14159265)
 
 // Should be improved...? TODO
-#define MAX_X (480)
-#define MAX_Y (270)
+#define MAX_X (384)
+#define MAX_Y (384)
 
 
 // To be implemented by the application
