@@ -1,13 +1,13 @@
 
 document.write('\
-<div style="width: 128px; position: absolute; left:100px; top:350px;">\
+<div style="width: 128px; position: absolute; left:100px; top:446px;">\
         <img src="joystick-base.png"/>\
         <div id="stick1" style="position: absolute; left:32px; top:32px;">\
         <img src="joystick-red.png"/>\
         </div>\
 </div>\
 \
-<div id="button" style="width: 128px; position: absolute; left:250px; top:350px;">\
+<div id="button" style="width: 128px; position: absolute; left:250px; top:446px;">\
         <img src="joystick-button.png"/>\
 </div>\
 ')
