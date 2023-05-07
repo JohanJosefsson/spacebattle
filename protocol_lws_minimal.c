@@ -39,20 +39,17 @@ int jpf_create_sprite(char * src)
 {
   assert(sprites.cnt < 100); // TODO...
   for(int i = 0; i < sprites.cnt; i++) {
-    if(!sprites.arr[i].inuse && !strcmp(src, sprites.arr[i].src)) {
-      sprites.arr[i].inuse = 1;
+    if(sprites.arr[i].inuse && !strcmp(src, sprites.arr[i].src)) {
       return i;
     }
   }
   strcpy(sprites.arr[sprites.cnt].src, src);
   sprites.arr[sprites.cnt].inuse = 1;
-  assert(sprites.cnt < 100); // TODO...
   return sprites.cnt++;
 }
 
 void jpf_release_sprite(int spid)
 {
-  sprites.arr[spid].inuse = 0;
 }
 
 
