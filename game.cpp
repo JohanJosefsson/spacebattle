@@ -172,27 +172,38 @@ struct spritelistelem
 	sf::Sprite sprite;
 };
 
+// Global sprite list
 static struct {
-	int cur;
-	struct spritelistelem * spritelist[100];
-} g_sprites;
+	struct {
+		char src[40];
+		int inuse;		
+	}arr[100];
+	spritelistelem * spritelist[100];
+	int cnt;
+}sprites;
 
-int jpf_create_sprite(char * src)
+int jpf_create_sprite(char* src)
 {
-
-	//g_sprites.spritelist[g_sprites.cur] = (spritelistelem*)malloc(sizeof(struct spritelistelem));
-	g_sprites.spritelist[g_sprites.cur] = new spritelistelem;
-	
-	if (!g_sprites.spritelist[g_sprites.cur]->texture.loadFromFile(src))
+	assert(sprites.cnt < 100); // TODO...
+	for (int i = 0; i < sprites.cnt; i++) {
+		if (sprites.arr[i].inuse && !strcmp(src, sprites.arr[i].src)) {
+			//sprites.arr[i].inuse = 1;
+			return i;
+		}
+	}
+	strcpy_s(sprites.arr[sprites.cnt].src, 40, src);
+	sprites.arr[sprites.cnt].inuse = 1;
+	sprites.spritelist[sprites.cnt] = new spritelistelem;
+	if (!sprites.spritelist[sprites.cnt]->texture.loadFromFile(src))
 	{
 		printf("Error loading pic!\n");
 		exit(1);
 	}
-	g_sprites.spritelist[g_sprites.cur]->sprite.setTexture(g_sprites.spritelist[g_sprites.cur]->texture);
-	
-	assert(g_sprites.cur < 100);
-	return g_sprites.cur++;
+	sprites.spritelist[sprites.cnt]->sprite.setTexture(sprites.spritelist[sprites.cnt]->texture);
+
+	return sprites.cnt++;
 }
+
 void jpf_release_sprite(int spid)
 {
 
@@ -200,8 +211,8 @@ void jpf_release_sprite(int spid)
 void jpf_draw_sprite(jpfhandle_t h, int spid, int x, int y, int rot)
 {
 	sf::RenderWindow * winp = (sf::RenderWindow*)h;
-	g_sprites.spritelist[spid]->sprite.setRotation(rot + 90);
-	g_sprites.spritelist[spid]->sprite.setPosition(x, y);
-	g_sprites.spritelist[spid]->sprite.setOrigin(16, 16);
-	winp->draw(g_sprites.spritelist[spid]->sprite);
+	sprites.spritelist[spid]->sprite.setRotation(rot + 90);
+	sprites.spritelist[spid]->sprite.setPosition(x, y);
+	sprites.spritelist[spid]->sprite.setOrigin(16, 16);
+	winp->draw(sprites.spritelist[spid]->sprite);
 }
