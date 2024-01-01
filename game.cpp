@@ -1,12 +1,27 @@
 
 #include "Game.h"
+#include "jpfappdefines.h"
 #include "jpf.h"
 #include <assert.h>
+#include "jpf_private.h"
+#include <iostream>
 
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 20.f);
 
+
+
+static struct Userinput {
+	int users[11];
+	int cur;
+	int keys[NROF_KEYEVT][11];
+	Userinput() : cur(-1) {};
+} userinput;
+
+static struct Camera camera[11];
+
+
 Game::Game()
-	: mWindow(sf::VideoMode(MAX_X, MAX_Y), "Your Awesome Game!")
+	: mWindow(sf::VideoMode(SCR_W, SCR_H), "Your Awesome Game!")
 {
 	//jpf_on_new_user(50);
 }
@@ -59,6 +74,11 @@ void Game::processEvents()
 void Game::update(sf::Time deltaTime)
 {
 	jpf_on_tick((jpfhandle_t)&mWindow);
+	struct Camera* c = &camera[userinput.cur];
+	if (-1 != userinput.cur) {
+		pan_camera(c);
+		//std::cout << userinput.cur << std::endl;
+	}
 }
 
 void Game::render()
@@ -71,14 +91,6 @@ void Game::render()
 }
 
 
-
-
-static struct Userinput{
-	int users[11];
-	int cur;
-	int keys[NROF_KEYEVT][11];
-	Userinput() : cur(-1) {};
-} userinput;
 
 
 void Game::handlePlayerInput(sf::Event::KeyEvent ke, bool isPressed)
@@ -212,7 +224,26 @@ void jpf_draw_sprite(jpfhandle_t h, int spid, int x, int y, int rot)
 {
 	sf::RenderWindow * winp = (sf::RenderWindow*)h;
 	sprites.spritelist[spid]->sprite.setRotation(rot + 90);
-	sprites.spritelist[spid]->sprite.setPosition(x, y);
+	int xs, ys;
+	struct Camera* c = &camera[userinput.cur];
+	if (-1 == userinput.cur)return;
+	xs = x_w2s(x, c);
+	ys = y_w2s(y, c);
+	sprites.spritelist[spid]->sprite.setPosition(xs, ys);
 	sprites.spritelist[spid]->sprite.setOrigin(16, 16);
 	winp->draw(sprites.spritelist[spid]->sprite);
 }
+
+void jpf_camera_follow(jpfusr_t usr, int x, int y)
+{
+	struct Camera* c = &camera[userinput.cur];
+	if (-1 != userinput.cur && userinput.cur == usr) {
+		update_camera(c, x, y);
+		//std::cout << userinput.cur << std::endl;
+	}
+	
+	//std::cout << userinput.cur << " " << x << " " << y << " : " << c->tgt_x << " " << c->x << " " << c->tgt_y << " " << c->y << std::endl;
+	//std::cout << y << " : "  << c->tgt_y << " " << c->y << std::endl;
+	
+}
+
