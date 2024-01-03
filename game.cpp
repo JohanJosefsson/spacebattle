@@ -8,7 +8,23 @@
 
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 20.f);
 
+struct JPFUSR {
+	int n;
+};
 
+struct JPFUSR usrs[11] = {
+	{0},
+	{1},
+	{2},
+	{3},
+	{4},
+	{5},
+	{6},
+	{7},
+	{8},
+	{9},
+	{10}
+};
 
 static struct Userinput {
 	int users[11];
@@ -73,10 +89,10 @@ void Game::processEvents()
 
 void Game::update(sf::Time deltaTime)
 {
-	jpf_on_tick((jpfhandle_t)&mWindow);
+	jpf_on_tick();
 	struct Camera* c = &camera[userinput.cur];
 	if (-1 != userinput.cur) {
-		pan_camera(c);
+		tick_camera(c);
 		//std::cout << userinput.cur << std::endl;
 	}
 }
@@ -134,13 +150,13 @@ void Game::handlePlayerInput(sf::Event::KeyEvent ke, bool isPressed)
 
 		if (!ke.shift) {
 			if (!userinput.users[n]) {
-				jpf_on_new_user(n);
+				jpf_on_new_user(&usrs[n]);
 				userinput.users[n] = 1;
 			}
 		}
 		else {
 			if (userinput.users[n]) {
-				jpf_on_remove_user(n);
+				jpf_on_remove_user(&usrs[n]);
 				userinput.users[n] = 0;
 				userinput.cur = -1;
 			}
@@ -173,7 +189,7 @@ void Game::handlePlayerInput(sf::Event::KeyEvent ke, bool isPressed)
 
 int is_key(jpfusr_t usr, enum keyevt key)
 {
-	return userinput.keys[key][usr];
+	return userinput.keys[key][usr->n];
 }
 
 
@@ -237,8 +253,8 @@ void jpf_draw_sprite(jpfhandle_t h, int spid, int x, int y, int rot)
 void jpf_camera_follow(jpfusr_t usr, int x, int y)
 {
 	struct Camera* c = &camera[userinput.cur];
-	if (-1 != userinput.cur && userinput.cur == usr) {
-		update_camera(c, x, y);
+	if (-1 != userinput.cur && userinput.cur == usr->n) {
+		set_camera(c, x, y);
 		//std::cout << userinput.cur << std::endl;
 	}
 	

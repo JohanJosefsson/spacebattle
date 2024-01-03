@@ -996,7 +996,7 @@ int Spaceship_draw(struct Spaceship * me, jpfhandle_t h)
 	if (me->inited) {
 
 		//jpf_camera_follow(h, me->x, me->y);
-		jpf_camera_set(me->usr, (int)me->x, (int)me->y);
+		jpf_camera_follow(me->usr, (int)me->x, (int)me->y);
 		jpf_draw_sprite(h, me->cur_spid, me->x, me->y, me->angle);
 		if(me->bubble.cur_spid != -1)jpf_draw_sprite(h, me->bubble.cur_spid, me->x, me->y, me->angle + me->bubble.angle);
 	}
