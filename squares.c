@@ -1,49 +1,30 @@
 
+#include "jpfappdefines.h"
 #include "squares.h"
 
 #include <assert.h>
+#include <string.h>
 
-
-// 480 x 270 pixel
-// 15 x 8 squares
-
-// 384 x 384 pixel
-// 12 x 12 squares
-#define NSQW (12)
-#define NSQH (12)
-#if 1
 static const char pattern[] =
 /*
 |012345678901234|       */
-"            " //0
-"  V         " //1
-"  O       V " //2
-"   O *      " //3
-" V     +   O" //4
-"     O     O" //5
-"     O  V   " //6
-" V      X   " //7
-"    OO      " //8
-"            " //9
-"            " //10
-"    OO      " //11
-"    OO      " //12
+"OO           OO" //0
+"O V    *      O" //1
+"   O        V  " //2
+"    O          " //3
+"  V         + O" //4
+"       O      O" //5
+"O      O  V    " //6
+"O V        X  O" //7
+"               " //8
+"               " //9
+"               " //10
+"               " //11
+"               " //12
+"               " //13
+"O             O" //14
+"OO    OO     OO" //15
 ;
-#else
-static const char pattern[] =
-/*
-|012345678901234|       */
-"O             O" //0
-" V             " //1
-"            V  " //2
-"               " //3
-"  V            " //4
-"               " //5
-"          V    " //6
-"  V            " //7
-"O             O" //8
-;
-#endif
 
 
 struct List { int n; int iterator; struct SqCoord coord[NSQW*NSQH]; };
@@ -68,6 +49,8 @@ static int char_to_index(char c)
 
 void Sq_init(void)
 {
+	printf("strlen: %i\n", strlen(pattern));
+	assert(strlen(pattern) == NSQH * NSQW);
 	for (int i = 0; i < sizeof(char_to_index_map) / sizeof(char); i++)
 	{
 		for (int j = 0; j < NSQH*NSQW; j++) {

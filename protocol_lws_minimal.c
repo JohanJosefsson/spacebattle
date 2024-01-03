@@ -19,9 +19,13 @@
 
 #include <string.h>
 #include <assert.h>
+#include "jpf_private.h"
 
 // The applications interface towards the implementation in this file
 #include "jpf.h"
+#define per_session_data__minimal JPFUSR
+#define per_vhost_data__minimal JPFHANDLE
+
 
 #define printf lwsl_user
 
@@ -71,7 +75,11 @@ struct per_session_data__minimal {
         // Application (jpf platform) data
         enum keyevt keys[NROF_KEYEVT];
         int spritecnt;
+	struct Camera camera;
 };
+
+
+typedef struct per_session_data__minimal APA;
 
 /* one of these is created for each vhost our protocol is used with */
 
@@ -110,15 +118,76 @@ void jpf_broadcast_string(struct per_vhost_data__minimal *vhd, char * s);
 #define JPF_PERIOD_us (50000)
 
 
+#if 0
 void jpf_draw_sprite(jpfhandle_t h, int spid, int x, int y, int rot)
 {
-  struct per_vhost_data__minimal *vhd = (struct per_vhost_data__minimal *)h;   
+  struct per_vhost_data__minimal *vhd = vhd;   
   // json example:
   // { "Id":102, "x":80, "y":120 }
   char * s = malloc(100);
   sprintf(s, "{ \"jpfcmd\":\"draw\", \"spid\":%d, \"x\":%d, \"y\":%d, \"r\":%d }", spid, x, y, (rot + 90));
   jpf_broadcast_string(vhd, s);
   free(s);
+}
+#endif
+
+
+void jpf_draw_sprite(jpfhandle_t h, int spid, int x, int y, int rot)
+//void jpf_broadcast_string(struct per_vhost_data__minimal * vhd, char * s)
+{
+//                struct per_vhost_data__minimal *vhd = (struct per_vhost_data__minimal *)vhd;
+		struct per_vhost_data__minimal *vhd = h;   
+		char * s = malloc(100);
+		lws_start_foreach_llp(struct per_session_data__minimal **,
+				      ppss, vhd->pss_list) {
+
+
+
+			// Change from world to screen coordinates
+			struct Camera * c = &((*ppss)->camera);
+			int xs, ys;
+			xs = x_w2s(x, c);
+			ys = y_w2s(y, c);
+			sprintf(s, "{ \"jpfcmd\":\"draw\", \"spid\":%d, \"x\":%d, \"y\":%d, \"r\":%d }", spid, xs, ys, (rot + 90));
+
+
+
+                	int len = strlen(s);
+			//vhd->amsg.len = len;
+			/* notice we over-allocate by LWS_PRE */
+			struct msg * msg = malloc(sizeof(struct msg));
+			msg->payload = malloc(LWS_PRE + len);
+			msg->next = 0;
+			msg->len = len;
+			memcpy((char *)msg->payload + LWS_PRE, s, len);
+
+
+			if((*ppss)->msglist) {
+				msg->next = (*ppss)->msglist;
+			}
+			(*ppss)->msglist = msg;
+
+		} lws_end_foreach_llp(ppss, pss_list);
+		free(s);
+
+
+
+
+//TOD in writable too...
+		lws_start_foreach_llp(struct per_session_data__minimal **,
+				      ppss, vhd->pss_list) {
+			lws_callback_on_writable((*ppss)->wsi);
+		} lws_end_foreach_llp(ppss, pss_list);
+}
+
+
+
+
+void jpf_camera_set(jpfusr_t usr, int x, int y)
+{
+//printf("camera %i %i \n", x, y);
+  struct Camera * c= &(usr->camera);
+  set_camera(c, x, y);
 }
 
 void jpf_broadcast_string(struct per_vhost_data__minimal * vhd, char * s)
@@ -145,25 +214,6 @@ void jpf_broadcast_string(struct per_vhost_data__minimal * vhd, char * s)
 		} lws_end_foreach_llp(ppss, pss_list);
 
 
-
-
-		lws_start_foreach_llp(struct per_session_data__minimal **,
-				      ppss, vhd->pss_list) {
-
-
-
-
-		int l = 0;
-		struct msg * p = (*ppss)->msglist;
-		while(p) {
-			l++;
-			p = p->next;
-		}
-
-
-
-		} lws_end_foreach_llp(ppss, pss_list);
-		
 //TOD in writable too...
 		lws_start_foreach_llp(struct per_session_data__minimal **,
 				      ppss, vhd->pss_list) {
@@ -171,14 +221,26 @@ void jpf_broadcast_string(struct per_vhost_data__minimal * vhd, char * s)
 		} lws_end_foreach_llp(ppss, pss_list);
 }
 
-void jpf_pf_tick(struct per_session_data__minimal * pss)
+void jpf_pf_tick(struct per_vhost_data__minimal * vhd, struct per_session_data__minimal * pss)
 {
-  jpf_on_tick((jpfhandle_t)pss);
+  jpf_on_tick();
+
+
+                lws_start_foreach_llp(struct per_session_data__minimal **,
+                                      ppss, vhd->pss_list) {
+
+			struct Camera * camera = &((*ppss)->camera);
+			tick_camera(camera);
+
+
+
+                } lws_end_foreach_llp(ppss, pss_list);
+
 }
 
-void jpf_pf_draw(struct per_vhost_data__minimal *vhd)
+void jpf_pf_draw(struct per_vhost_data__minimal *vhd,  struct per_session_data__minimal * pss)
 {
-  jpf_on_draw((jpfhandle_t)vhd);
+  jpf_on_draw(vhd);
 //  jpf_broadcast_string(vhd, "{ \"Update\":1 }");
   jpf_broadcast_string(vhd, "{ \"jpfcmd\":\"update\" }");
 }
@@ -242,9 +304,9 @@ void jpf_pf_rec(jpfusr_t usr, void * in, int len)
 
 
 
-int is_key(jpfusr_t h, enum keyevt k)
+int is_key(jpfusr_t usr, enum keyevt k)
 {
-  struct per_session_data__minimal *pss = (struct per_session_data__minimal *)h;
+  struct per_session_data__minimal *pss = usr;
   int ret = pss->keys[k];
   //pss->keys[k] = 0;
 //  if(KEY_SPACE==k && ret)pss->keys[KEY_SPACE] = 0;
@@ -253,13 +315,21 @@ int is_key(jpfusr_t h, enum keyevt k)
   return ret;
 }
 
-void ack_key(jpfusr_t h, enum keyevt k)
+void ack_key(jpfusr_t usr, enum keyevt k)
 {
-  struct per_session_data__minimal *pss = (struct per_session_data__minimal *)h;
+  struct per_session_data__minimal *pss = usr;
   pss->keys[k] = 0;
 }
 
 ////////////////////////////////
+
+
+
+void clear_pss(struct per_session_data__minimal * pss)
+{
+	struct per_session_data__minimal pss0 = {0};
+	*pss = pss0;
+}
 
 
 static int
@@ -309,7 +379,8 @@ callback_minimal(struct lws *wsi, enum lws_callback_reasons reason,
 
 	case LWS_CALLBACK_ESTABLISHED:
                 printf("jpf_on_new_user(%lx)\n", (unsigned)user);
-		jpf_on_new_user((unsigned)user);
+		clear_pss(pss);
+		jpf_on_new_user(user);
 // should clear app data?
 		/* add ourselves to the list of live pss held in the vhd */
 		lws_ll_fwd_insert(pss, pss_list, vhd->pss_list);
@@ -320,13 +391,13 @@ callback_minimal(struct lws *wsi, enum lws_callback_reasons reason,
 
         case LWS_CALLBACK_TIMER:
                         lws_set_timer_usecs(wsi, JPF_PERIOD_us);
-			jpf_pf_tick(pss);
-			jpf_pf_draw(vhd);
+			jpf_pf_tick(vhd, pss);
+			jpf_pf_draw(vhd, pss);
                 break;
 
 	case LWS_CALLBACK_CLOSED:
                 printf("user removed\n");
-		jpf_on_remove_user((unsigned)pss);//fix types!
+		jpf_on_remove_user(pss);
                 if(pss == vhd->masterusr) {
 			printf("master user removed\n");
                 	vhd->masterusr = 0;
@@ -390,7 +461,7 @@ callback_minimal(struct lws *wsi, enum lws_callback_reasons reason,
 
 	case LWS_CALLBACK_RECEIVE:
 //TODO destry msg correctly
-	 	jpf_pf_rec((jpfusr_t)user, in, len);
+	 	jpf_pf_rec(user, in, len);
 		break;
 
 	default:
