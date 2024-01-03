@@ -183,7 +183,7 @@ void jpf_draw_sprite(jpfhandle_t h, int spid, int x, int y, int rot)
 
 
 
-void jpf_camera_set(jpfusr_t usr, int x, int y)
+void jpf_camera_follow(jpfusr_t usr, int x, int y)
 {
 //printf("camera %i %i \n", x, y);
   struct Camera * c= &(usr->camera);
