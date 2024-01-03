@@ -9,7 +9,7 @@ extern "C" {
 	// jpf.h
 
 	// handle? TODO
-	typedef intptr_t jpfusr_t; /* n.b: 0 = null */
+	typedef struct JPFUSR * jpfusr_t;
 	typedef struct JPFHANDLE * jpfhandle_t;
 	int jpf_create_sprite(char * src);
 	void jpf_release_sprite(int spid);
@@ -19,7 +19,7 @@ extern "C" {
 		KEY_W, KEY_A, KEY_S, KEY_D, KEY_SPACE, NROF_KEYEVT
 	};
 	int is_key(jpfusr_t usr, enum keyevt);
-  void ack_key(jpfusr_t h, enum keyevt k);
+  void ack_key(jpfusr_t usr, enum keyevt k);
   // Only meaaningful on the server
 #ifdef _WIN32
 #define ack_key(a,b)
@@ -39,7 +39,7 @@ extern "C" {
 	void jpf_init();
 	void jpf_on_new_user(jpfusr_t usr);
 	void jpf_on_remove_user(jpfusr_t usr);
-	void jpf_on_tick(jpfhandle_t h);
+	void jpf_on_tick(void);
 	void jpf_on_draw(jpfhandle_t h);
 
 

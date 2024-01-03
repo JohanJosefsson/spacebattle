@@ -1,6 +1,8 @@
 
 #include "app.h"
 #include "squares.h"
+#include "jeq.h"
+#include <stdlib.h>
 
 
 struct {

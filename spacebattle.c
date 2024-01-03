@@ -86,8 +86,9 @@ void jpf_on_remove_user(jpfusr_t usr)
 	}
 }
 
-void jpf_on_tick(jpfhandle_t h)
+void jpf_on_tick(void)
 {
+void * h = 0;
 	timer_tick();
 	for(int i = 0; i < MAX_USR; i++) {
 		if(0 != g_app.users[i].usr) {

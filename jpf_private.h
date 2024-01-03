@@ -25,7 +25,7 @@ inline static int y_s2w(int sy, struct Camera* c) {
 }
 
 
-inline static void update_camera(struct Camera* c, int x, int y)
+inline static void set_camera(struct Camera* c, int x, int y)
 {
 	int y0 = c->tgt_y;
 	const int marg = 2 * 32;
@@ -48,7 +48,16 @@ inline static void update_camera(struct Camera* c, int x, int y)
 	}
 }
 
-inline static void pan_camera(struct Camera* c)
+#if 0
+inline static void set_camera(struct Camera* c, int x, int y)
+{
+  c-> x = x;
+  c-> y = y;
+}
+#endif
+
+
+inline static void tick_camera(struct Camera* c)
 {
 	const int step = 10;
 	if (abs(c->x - c->tgt_x) < step)c->x = c->tgt_x;
