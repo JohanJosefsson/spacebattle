@@ -146,8 +146,8 @@ void jpf_draw_sprite(jpfhandle_t h, int spid, int x, int y, int rot)
 			// Change from world to screen coordinates
 			struct Camera * c = &((*ppss)->camera);
 			int xs, ys;
-			xs = x_w2s(x, c);
-			ys = y_w2s(y, c);
+			xs = jpfpriv_x_w2s(x, c);
+			ys = jpfpriv_y_w2s(y, c);
 			sprintf(s, "{ \"jpfcmd\":\"draw\", \"spid\":%d, \"x\":%d, \"y\":%d, \"r\":%d }", spid, xs, ys, (rot + 90));
 
 
@@ -187,7 +187,7 @@ void jpf_camera_follow(jpfusr_t usr, int x, int y)
 {
 //printf("camera %i %i \n", x, y);
   struct Camera * c= &(usr->camera);
-  set_camera(c, x, y);
+  jpfpriv_jpfpriv_set_camera(c, x, y);
 }
 
 void jpf_broadcast_string(struct per_vhost_data__minimal * vhd, char * s)
@@ -230,7 +230,7 @@ void jpf_pf_tick(struct per_vhost_data__minimal * vhd, struct per_session_data__
                                       ppss, vhd->pss_list) {
 
 			struct Camera * camera = &((*ppss)->camera);
-			tick_camera(camera);
+			jpfpriv_tick_camera(camera);
 
 
 

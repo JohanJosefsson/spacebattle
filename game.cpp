@@ -92,7 +92,7 @@ void Game::update(sf::Time deltaTime)
 	jpf_on_tick();
 	struct Camera* c = &camera[userinput.cur];
 	if (-1 != userinput.cur) {
-		tick_camera(c);
+		jpfpriv_tick_camera(c);
 		//std::cout << userinput.cur << std::endl;
 	}
 }
@@ -243,8 +243,8 @@ void jpf_draw_sprite(jpfhandle_t h, int spid, int x, int y, int rot)
 	int xs, ys;
 	struct Camera* c = &camera[userinput.cur];
 	if (-1 == userinput.cur)return;
-	xs = x_w2s(x, c);
-	ys = y_w2s(y, c);
+	xs = jpfpriv_x_w2s(x, c);
+	ys = jpfpriv_y_w2s(y, c);
 	sprites.spritelist[spid]->sprite.setPosition(xs, ys);
 	sprites.spritelist[spid]->sprite.setOrigin(16, 16);
 	winp->draw(sprites.spritelist[spid]->sprite);
@@ -254,7 +254,7 @@ void jpf_camera_follow(jpfusr_t usr, int x, int y)
 {
 	struct Camera* c = &camera[userinput.cur];
 	if (-1 != userinput.cur && userinput.cur == usr->n) {
-		set_camera(c, x, y);
+		jpfpriv_jpfpriv_set_camera(c, x, y);
 		//std::cout << userinput.cur << std::endl;
 	}
 	

@@ -36,20 +36,16 @@ static const int solid_col_sigs[] = {
 
 void jpf_init()
 {
-
-
   // Make it possible to call several times
   static int is_inited = 0;
   if(is_inited) {
     return;
   }
 
-	jeq_init(NOF_SUBS);
+  jeq_init(NOF_SUBS);
   Sq_init();
   fx_init();
   draw_init();
-
-
 
   is_inited = 1;
 
@@ -58,7 +54,7 @@ void jpf_init()
 
 void jpf_on_new_user(jpfusr_t usr)
 {
-        struct User * p = 0;
+    struct User * p = 0;
 	for(int i = 0; i < MAX_USR; i++) {
 		if(0 == g_app.users[i].usr) {
                         p = &g_app.users[i];
@@ -68,7 +64,6 @@ void jpf_on_new_user(jpfusr_t usr)
         if(p) {
 			p->usr = usr;
 			p->s = new_Spaceship(usr);
-		//User_init(p, usr);
 	} else {
 		//printf("New user rejected!\n");
 		return; // Ths will leak memory (pss)
@@ -92,11 +87,9 @@ void * h = 0;
 	timer_tick();
 	for(int i = 0; i < MAX_USR; i++) {
 		if(0 != g_app.users[i].usr) {
-//			User_tick(&g_app.users[i], h);
 			Spaceship_tick(g_app.users[i].s, h);
 		}
 	}
-
 	jeq_broadcast(EVT_TICK, 0);
 	while (!jeq_dispatch());
 }
