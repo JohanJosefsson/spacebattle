@@ -5,27 +5,6 @@
 #include <assert.h>
 #include <string.h>
 
-static const char pattern[] =
-/*
-|012345678901234|       */
-"OO           OO" //0
-"O V    *      O" //1
-"   O        V  " //2
-"    O          " //3
-"  V         + O" //4
-"       O      O" //5
-"O      O  V    " //6
-"O V        X  O" //7
-"               " //8
-"               " //9
-"               " //10
-"               " //11
-"               " //12
-"               " //13
-"O             O" //14
-"OO    OO     OO" //15
-;
-
 
 struct List { int n; int iterator; struct SqCoord coord[NSQW*NSQH]; };
 
@@ -47,10 +26,8 @@ static int char_to_index(char c)
 	} 
 }
 
-void Sq_init(void)
+void Sq_init(const char * pattern)
 {
-	printf("strlen: %i\n", strlen(pattern));
-	assert(strlen(pattern) == NSQH * NSQW);
 	for (int i = 0; i < sizeof(char_to_index_map) / sizeof(char); i++)
 	{
 		for (int j = 0; j < NSQH*NSQW; j++) {

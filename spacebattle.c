@@ -16,6 +16,27 @@
 
 #define MAX_USR (5)
 
+static const char pattern[] =
+/*
+|012345678901234|       */
+"OO           OO" //0
+"O V    *      O" //1
+"   O        V  " //2
+"    O          " //3
+"  V         + O" //4
+"       O      O" //5
+"O      O  V    " //6
+"O V        X  O" //7
+"               " //8
+"               " //9
+"               " //10
+"               " //11
+"               " //12
+"               " //13
+"O             O" //14
+"OO    OO     OO" //15
+;
+
 struct User {
 	jpfusr_t usr;
 	struct Spaceship * s;
@@ -43,7 +64,9 @@ void jpf_init()
   }
 
   jeq_init(NOF_SUBS);
-  Sq_init();
+
+  assert(strlen(pattern) == NSQH * NSQW);
+  Sq_init(pattern);
   fx_init();
   draw_init();
 
