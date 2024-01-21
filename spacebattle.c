@@ -37,6 +37,8 @@ static const char pattern[] =
 "OO    OO     OO" //15
 ;
 
+static char char_to_index_map[] = { 'V', 'O', '*', 'X', '+' };
+
 struct User {
 	jpfusr_t usr;
 	struct Spaceship * s;
@@ -66,7 +68,7 @@ void jpf_init()
   jeq_init(NOF_SUBS);
 
   assert(strlen(pattern) == NSQH * NSQW);
-  Sq_init(pattern);
+  Sq_init(pattern, char_to_index_map, sizeof(char_to_index_map));
   fx_init();
   draw_init();
 
